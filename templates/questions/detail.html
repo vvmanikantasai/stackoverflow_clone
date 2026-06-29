@@ -119,8 +119,8 @@
     <h2 class="answers-header">{{ answer_count }} Answer{{ answer_count|pluralize }}</h2>
     {% if request.user == question.author and answer_count %}
       <p class="answers-guidance">
-        Choose the answer that helped most. Its author earns
-        <strong>15 reputation</strong>.
+        Choose the answer that helped most. You earn <strong>2 reputation</strong>
+        and the answerer earns <strong>15</strong>. Self-accepted answers earn no reputation.
       </p>
     {% endif %}
   </div>
@@ -164,14 +164,24 @@
           {% endif %}
 
           {% if request.user == question.author and not answer.is_accepted %}
-            <form method="post" action="{% url 'accept_answer' answer.pk %}" class="answer-accept-form">
-              {% csrf_token %}
-              <button type="submit" class="accept-answer-action">
-                <span aria-hidden="true">✓</span>
-                Accept this answer
-                <small>+15 reputation</small>
-              </button>
-            </form>
+            {% if answer.author == question.author and not can_accept_own_answer %}
+              <div class="self-accept-wait">
+                <button type="button" class="accept-answer-action" disabled>
+                  <span aria-hidden="true">schedule</span>
+                  Accept your answer
+                </button>
+                <small>Available {{ self_accept_available_at|naturaltime }}</small>
+              </div>
+            {% else %}
+              <form method="post" action="{% url 'accept_answer' answer.pk %}" class="answer-accept-form">
+                {% csrf_token %}
+                <button type="submit" class="accept-answer-action">
+                  <span aria-hidden="true">✓</span>
+                  {% if answer.author == question.author %}Accept your answer{% else %}Accept this answer{% endif %}
+                  <small>{% if answer.author == question.author %}No reputation{% else %}+15 reputation{% endif %}</small>
+                </button>
+              </form>
+            {% endif %}
           {% endif %}
         </div>
         {% endif %}

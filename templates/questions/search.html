@@ -1,39 +1,117 @@
 {% extends 'base.html' %}
-{% load markdown_extras %}
+{% load static humanize markdown_extras %}
 {% block title %}Search: {{ query }} - Stack Overflow{% endblock %}
 {% block content %}
-<main class="main-content">
-  <div class="page-header">
-    <h1>Search Results</h1>
-  </div>
-  <p class="search-result-count">{% if page.paginator.count %}{{ page.paginator.count }} result{{ page.paginator.count|pluralize }} for "{{ query }}"{% else %}No results for "{{ query }}"{% endif %}</p>
+<main class="main-content search-results-page">
+  <section class="search-results-hero">
+    <div class="search-results-heading">
+      <span class="search-results-icon material-symbols-outlined" aria-hidden="true">search</span>
+      <div>
+        <p class="search-results-eyebrow">Search results</p>
+        <h1>{% if query %}“{{ query }}”{% else %}Find a question{% endif %}</h1>
+        <p>
+          {% if query %}
+            {{ page.paginator.count|intcomma }} result{{ page.paginator.count|pluralize }} found
+          {% else %}
+            Enter a keyword, error message, or technology.
+          {% endif %}
+        </p>
+      </div>
+    </div>
+    <div class="search-syntax-help">
+      <span class="material-symbols-outlined" aria-hidden="true">sell</span>
+      Search a tag with brackets:
+      <a class="search-example" href="{% url 'search' %}?q=%5Bdjango%5D">[django]</a>
+      <span>or combine it with words:</span>
+      <a class="search-example" href="{% url 'search' %}?q=%5Bdjango%5D+forms">[django] forms</a>
+    </div>
+    {% if tag_filters %}
+      <div class="active-search-filters" aria-label="Active tag filters">
+        <span>Filtering by</span>
+        {% for tag_name in tag_filters %}<span class="tag">[{{ tag_name }}]</span>{% endfor %}
+      </div>
+    {% endif %}
+  </section>
+
   {% if page.object_list %}
-    <div class="question-list">
+    <div class="search-results-toolbar">
+      <span>Showing {{ page.start_index }}–{{ page.end_index }} of {{ page.paginator.count|intcomma }}</span>
+      <a href="{% url 'home' %}">Browse all questions</a>
+    </div>
+
+    <div class="question-list search-results-list">
       {% for question in page.object_list %}
       <div class="question-card">
-        <div class="question-stats">
-          <div class="stat-item"><span class="stat-number">{{ question.vote_count }}</span><span>votes</span></div>
-          <div class="stat-item {% if question.answer_count %}has-answers{% endif %}"><span class="stat-number">{{ question.answer_count }}</span><span>answers</span></div>
-        </div>
         <div class="question-body">
-          <div class="question-title"><a href="{{ question.get_absolute_url }}">{{ question.title }}</a></div>
-          <div class="question-excerpt">{{ question.content|render_markdown|striptags|truncatechars:150 }}</div>
+          <div class="search-result-topline">
+            <div class="question-title">
+              <a href="{{ question.get_absolute_url }}">{{ question.title }}</a>
+              {% if question.has_accepted_result %}
+                <span class="search-accepted-label"><span aria-hidden="true">✓</span> Solved</span>
+              {% endif %}
+            </div>
+            <div class="search-result-metrics" aria-label="Question statistics">
+              <span><strong>{{ question.vote_count }}</strong> vote{{ question.vote_count|pluralize }}</span>
+              <span class="{% if question.has_accepted_result %}accepted{% elif question.answer_count > 0 %}answered{% endif %}">
+                <strong>{{ question.answer_count }}</strong> answer{{ question.answer_count|pluralize }}
+              </span>
+              <span><strong>{{ question.view_count }}</strong> view{{ question.view_count|pluralize }}</span>
+            </div>
+          </div>
+          <div class="question-excerpt">{{ question.content|render_markdown|striptags|truncatechars:210 }}</div>
           <div class="question-meta">
-            <div class="tags-list">{% for tag in question.tags.all %}<a href="{% url 'tag_detail' tag.slug %}" class="tag">{{ tag.name }}</a>{% endfor %}</div>
-            <div class="author-info"><a href="{% url 'profile' question.author.username %}" class="author-name">{{ question.author.username }}</a></div>
+            <div class="tags-list">
+              {% for tag in question.tags.all %}
+                <a href="{% url 'tag_detail' tag.slug %}" class="tag">{{ tag.name }}</a>
+              {% empty %}
+                <span class="search-no-tags">No tags</span>
+              {% endfor %}
+            </div>
+            <div class="author-info">
+              <img class="author-avatar" src="{{ question.author.profile.get_avatar_url }}" alt="">
+              <a href="{% url 'profile' question.author.username %}" class="author-name">{{ question.author.username }}</a>
+              <span class="rep-badge">{{ question.author.profile.reputation|intcomma }} rep</span>
+              <span>{{ question.created_at|naturaltime }}</span>
+            </div>
           </div>
         </div>
       </div>
       {% endfor %}
     </div>
+
+    {% if page.has_other_pages %}
+    <nav class="pagination search-pagination" aria-label="Search result pages">
+      {% if page.has_previous %}
+        <a href="?q={{ query|urlencode }}&page={{ page.previous_page_number }}" class="page-link" aria-label="Previous page">‹</a>
+      {% else %}
+        <span class="page-link disabled" aria-hidden="true">‹</span>
+      {% endif %}
+
+      {% for num in page.paginator.page_range %}
+        {% if page.number == num %}
+          <span class="page-link active" aria-current="page">{{ num }}</span>
+        {% elif num > page.number|add:'-3' and num < page.number|add:'3' %}
+          <a href="?q={{ query|urlencode }}&page={{ num }}" class="page-link">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+
+      {% if page.has_next %}
+        <a href="?q={{ query|urlencode }}&page={{ page.next_page_number }}" class="page-link" aria-label="Next page">›</a>
+      {% else %}
+        <span class="page-link disabled" aria-hidden="true">›</span>
+      {% endif %}
+    </nav>
+    {% endif %}
   {% else %}
-    <div class="empty-state">
-      <div class="empty-icon">🔍</div>
-      <h3>No results found</h3>
-      <p>Try different keywords or check your spelling.</p>
-      <a href="{% url 'ask_question' %}" class="btn btn-primary">Ask a Question</a>
+    <div class="empty-state search-empty-state">
+      <span class="empty-icon material-symbols-outlined" aria-hidden="true">manage_search</span>
+      <h2>{% if query %}No questions matched “{{ query }}”{% else %}Start searching{% endif %}</h2>
+      <p>{% if query %}Try fewer words, check the spelling, or search using a technology name or error message.{% else %}Search by title, question content, or tag.{% endif %}</p>
+      <div class="search-empty-actions">
+        {% if query %}<a href="{% url 'search' %}" class="btn btn-ghost">Clear search</a>{% endif %}
+        <a href="{% url 'ask_question' %}" class="btn btn-primary">Ask a Question</a>
+      </div>
     </div>
   {% endif %}
 </main>
-<aside class="right-sidebar"></aside>
 {% endblock %}

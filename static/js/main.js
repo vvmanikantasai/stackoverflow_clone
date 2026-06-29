@@ -336,16 +336,29 @@ function applyEditorAction(textarea, action) {
   } else if (action === 'code-block') {
     replacement = `\n\`\`\`\n${selected || 'code here'}\n\`\`\`\n`;
   } else if (action === 'ul') {
-    replacement = `\n- ${selected || 'list item'}\n`;
+    replacement = formatList(selected, false);
   } else if (action === 'ol') {
-    replacement = `\n1. ${selected || 'list item'}\n`;
+    replacement = formatList(selected, true);
   } else if (action === 'hr') {
     replacement = `\n---\n`;
   }
 
   textarea.value = before + replacement + after;
-  textarea.selectionStart = textarea.selectionEnd = selected ? start + replacement.length : start + replacement.length;
+  textarea.selectionStart = textarea.selectionEnd = start + replacement.length;
+  textarea.dispatchEvent(new Event('input', { bubbles: true }));
   textarea.focus();
+}
+
+function formatList(selected, ordered) {
+  const lines = (selected || 'list item')
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(Boolean);
+  const list = lines.map((line, index) => {
+    const cleanLine = line.replace(/^(?:[-*+]|\d+\.)\s+/, '');
+    return `${ordered ? `${index + 1}.` : '-'} ${cleanLine}`;
+  }).join('\n');
+  return `\n${list}\n`;
 }
 
 // ===== MARKDOWN PREVIEW =====
@@ -396,11 +409,19 @@ function simpleMarkdown(text) {
   html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
   // hr
   html = html.replace(/^---$/gm, '<hr>');
-  // ul
-  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
-  html = html.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
-  // ol
-  html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+  // ordered and unordered list blocks
+  html = html.replace(/(?:^|\n)((?:\d+\. [^\n]+(?:\n|$))+)/g, (match, block) => {
+    const items = block.trim().split('\n')
+      .map(line => `<li>${line.replace(/^\d+\.\s+/, '')}</li>`)
+      .join('');
+    return `\n<ol>${items}</ol>\n`;
+  });
+  html = html.replace(/(?:^|\n)((?:- [^\n]+(?:\n|$))+)/g, (match, block) => {
+    const items = block.trim().split('\n')
+      .map(line => `<li>${line.replace(/^-\s+/, '')}</li>`)
+      .join('');
+    return `\n<ul>${items}</ul>\n`;
+  });
   // paragraphs
   html = html.replace(/\n\n/g, '</p><p>');
   html = '<p>' + html + '</p>';

@@ -24,6 +24,9 @@
             <button type="button" class="editor-btn" data-action="code" data-target="question-editor">`</button>
             <button type="button" class="editor-btn" data-action="code-block" data-target="question-editor">{ }</button>
             <button type="button" class="editor-btn" data-action="link" data-target="question-editor">🔗</button>
+            <div class="editor-sep"></div>
+            <button type="button" class="editor-btn" data-action="ul" data-target="question-editor" title="Bullet list">• List</button>
+            <button type="button" class="editor-btn" data-action="ol" data-target="question-editor" title="Numbered list">1. List</button>
           </div>
           <textarea name="content" id="question-editor" class="form-control" rows="12">{{ form.content.value }}</textarea>
           <div class="preview-toggle-bar">

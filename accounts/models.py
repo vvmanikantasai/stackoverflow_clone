@@ -13,6 +13,7 @@ class Profile(models.Model):
     joined_date = models.DateTimeField(auto_now_add=True)
     website = models.URLField(blank=True)
     github_url = models.URLField(blank=True)
+    x_url = models.URLField(blank=True)
     location = models.CharField(max_length=100, blank=True)
     email_verified = models.BooleanField(default=False)
     email_verification_token = models.CharField(max_length=100, blank=True)
@@ -56,6 +57,7 @@ class ReputationHistory(models.Model):
         ('answer_upvote', 'Answer Upvote (+10)'),
         ('answer_downvote', 'Answer Downvote (-2)'),
         ('answer_accepted', 'Answer Accepted (+15)'),
+        ('answer_acceptance', 'Accepted an Answer (+2)'),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reputation_history')
     action = models.CharField(max_length=50, choices=ACTION_CHOICES)

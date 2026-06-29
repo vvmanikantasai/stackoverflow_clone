@@ -20,8 +20,13 @@
           GitHub
         </a>
         {% endif %}
+        {% if profile.x_url %}
+        <a class="x-profile-link" href="{{ profile.x_url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ profile_user.username }} on X">
+          <span aria-hidden="true">𝕏</span> X
+        </a>
+        {% endif %}
       </div>
-      {% if profile.bio %}<p class="profile-bio">{{ profile.bio }}</p>{% endif %}
+      {% if profile.bio %}<div class="profile-bio post-body">{{ profile.bio|render_markdown }}</div>{% endif %}
     </div>
     <div class="profile-actions">
       {% if request.user == profile_user %}
@@ -148,41 +153,4 @@
     {% endif %}
   {% endif %}
 </main>
-<aside class="right-sidebar">
-  <div class="sidebar-widget profile-about-widget">
-    <div class="widget-header">
-      <span class="material-symbols-outlined" aria-hidden="true">person</span>
-      About {{ profile_user.username }}
-    </div>
-    <div class="widget-body profile-about">
-      <div class="profile-about-row">
-        <span class="profile-about-icon material-symbols-outlined" aria-hidden="true">workspace_premium</span>
-        <span class="profile-about-copy">
-          <strong>{{ profile.reputation|intcomma }}</strong>
-          <small>Reputation earned</small>
-        </span>
-      </div>
-      <div class="profile-about-row">
-        <span class="profile-about-icon material-symbols-outlined" aria-hidden="true">calendar_month</span>
-        <span class="profile-about-copy">
-          <strong>{{ profile.joined_date|date:"F Y" }}</strong>
-          <small>Member for {{ profile.joined_date|timesince }}</small>
-        </span>
-      </div>
-      <div class="profile-about-row">
-        <span class="profile-about-icon material-symbols-outlined" aria-hidden="true">group</span>
-        <span class="profile-about-copy">
-          <strong>{{ follower_count }} follower{{ follower_count|pluralize }}</strong>
-          <small>Following {{ following_count }} member{{ following_count|pluralize }}</small>
-        </span>
-      </div>
-
-      <div class="profile-about-contributions">
-        <span><strong>{{ question_count }}</strong> question{{ question_count|pluralize }}</span>
-        <span><strong>{{ answer_count }}</strong> answer{{ answer_count|pluralize }}</span>
-        <span><strong>{{ badge_count }}</strong> badge{{ badge_count|pluralize }}</span>
-      </div>
-    </div>
-  </div>
-</aside>
 {% endblock %}

@@ -17,29 +17,59 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">GitHub profile</label>
-        {{ form.github_url }}
-        <div class="form-help">Example: https://github.com/your-username</div>
-        {% if form.github_url.errors %}<div class="form-error">{{ form.github_url.errors.0 }}</div>{% endif %}
-      </div>
-      <div class="form-group">
         <label class="form-label" for="{{ form.avatar.id_for_label }}">Profile image</label>
         {{ form.avatar }}
         <div class="form-help">Upload a clear square image for the best result.</div>
         {% if form.avatar.errors %}<div class="form-error">{{ form.avatar.errors.0 }}</div>{% endif %}
       </div>
       <div class="form-group">
-        <label class="form-label">Bio</label>
-        {{ form.bio }}
+        <label class="form-label" for="profile-bio-editor">About me</label>
+        <div class="form-help profile-editor-help">Introduce yourself using Markdown formatting.</div>
+        <div class="editor-wrap profile-bio-editor">
+          <div class="editor-toolbar">
+            <button type="button" class="editor-btn" data-action="bold" data-target="profile-bio-editor" title="Bold"><b>B</b></button>
+            <button type="button" class="editor-btn" data-action="italic" data-target="profile-bio-editor" title="Italic"><i>I</i></button>
+            <button type="button" class="editor-btn" data-action="strikethrough" data-target="profile-bio-editor" title="Strikethrough"><s>S</s></button>
+            <div class="editor-sep"></div>
+            <button type="button" class="editor-btn" data-action="link" data-target="profile-bio-editor" title="Link">🔗</button>
+            <button type="button" class="editor-btn" data-action="blockquote" data-target="profile-bio-editor" title="Quote">"</button>
+            <div class="editor-sep"></div>
+            <button type="button" class="editor-btn" data-action="ul" data-target="profile-bio-editor" title="Bullet list">• List</button>
+            <button type="button" class="editor-btn" data-action="ol" data-target="profile-bio-editor" title="Numbered list">1. List</button>
+          </div>
+          {{ form.bio }}
+          <div class="preview-toggle-bar">
+            <button type="button" class="preview-tab-btn active" data-mode="write" data-target="profile-bio-editor" data-preview="profile-bio-preview">Write</button>
+            <button type="button" class="preview-tab-btn" data-mode="preview" data-target="profile-bio-editor" data-preview="profile-bio-preview">Preview</button>
+          </div>
+          <div class="md-preview post-body" id="profile-bio-preview"></div>
+        </div>
         {% if form.bio.errors %}<div class="form-error">{{ form.bio.errors.0 }}</div>{% endif %}
       </div>
+      <fieldset class="profile-links-fieldset">
+        <legend>Profile links</legend>
+        <p class="form-help">Add the places where people can find your work.</p>
+        <div class="profile-links-grid">
+          <div class="form-group">
+            <label class="form-label" for="{{ form.website.id_for_label }}">Website</label>
+            {{ form.website }}
+            {% if form.website.errors %}<div class="form-error">{{ form.website.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="{{ form.github_url.id_for_label }}">GitHub</label>
+            {{ form.github_url }}
+            {% if form.github_url.errors %}<div class="form-error">{{ form.github_url.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="{{ form.x_url.id_for_label }}">X</label>
+            {{ form.x_url }}
+            {% if form.x_url.errors %}<div class="form-error">{{ form.x_url.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+      </fieldset>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Website</label>
-          {{ form.website }}
-        </div>
-        <div class="form-group">
-          <label class="form-label">Location</label>
+          <label class="form-label" for="{{ form.location.id_for_label }}">Location</label>
           {{ form.location }}
         </div>
       </div>

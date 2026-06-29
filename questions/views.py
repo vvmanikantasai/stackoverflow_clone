@@ -1,12 +1,16 @@
+import re
+from datetime import timedelta
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Count, F, Q
+from django.db.models import Count, Exists, F, OuterRef, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.utils.text import slugify
 
 from answers.forms import AnswerForm
@@ -231,6 +235,8 @@ def question_detail_view(request, slug):
         'q_comments': question_comments,
         'related_questions': related_questions,
         'answer_count': len(answers),
+        'can_accept_own_answer': timezone.now() >= question.created_at + timedelta(hours=48),
+        'self_accept_available_at': question.created_at + timedelta(hours=48),
     }
     return render(request, 'questions/detail.html', context)
 
@@ -300,21 +306,47 @@ def saved_questions_view(request):
 
 
 def search_view(request):
-    query = request.GET.get('q', '')
+    query = request.GET.get('q', '').strip()
+    tag_filters = [
+        tag.strip().lower()
+        for tag in re.findall(r'\[([^\]]+)\]', query)
+        if tag.strip()
+    ]
+    text_query = re.sub(r'\[[^\]]+\]', ' ', query).strip()
     results = []
     if query:
-        results = Question.objects.filter(
-            Q(title__icontains=query)
-            | Q(content__icontains=query)
-            | Q(tags__name__icontains=query),
-            is_deleted=False,
-        )
+        results = Question.objects.filter(is_deleted=False)
+        for tag_name in tag_filters:
+            results = results.filter(tags__name__iexact=tag_name)
+        if text_query:
+            results = results.filter(
+                Q(title__icontains=text_query)
+                | Q(content__icontains=text_query)
+            )
         results = (
             results.distinct()
-            .select_related('author')
+            .annotate(
+                has_accepted_result=Exists(
+                    Answer.objects.filter(
+                        question_id=OuterRef('pk'),
+                        is_accepted=True,
+                        is_deleted=False,
+                    )
+                )
+            )
+            .select_related('author', 'author__profile')
             .prefetch_related('tags')
             .order_by('-vote_count')
         )
     paginator = Paginator(results, 15)
     page = paginator.get_page(request.GET.get('page', 1))
-    return render(request, 'questions/search.html', {'page': page, 'query': query})
+    return render(
+        request,
+        'questions/search.html',
+        {
+            'page': page,
+            'query': query,
+            'tag_filters': tag_filters,
+            'text_query': text_query,
+        },
+    )

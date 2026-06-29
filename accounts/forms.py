@@ -78,9 +78,11 @@ class ProfileUpdateForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = ['avatar', 'bio', 'website', 'github_url', 'location']
+        fields = ['avatar', 'bio', 'website', 'github_url', 'x_url', 'location']
         labels = {
             'avatar': 'Profile image',
+            'bio': 'About me',
+            'x_url': 'X profile',
         }
         widgets = {
             'avatar': forms.ClearableFileInput(
@@ -89,8 +91,9 @@ class ProfileUpdateForm(forms.ModelForm):
             'bio': forms.Textarea(
                 attrs={
                     'class': 'form-control',
-                    'rows': 4,
-                    'placeholder': 'Tell us about yourself...',
+                    'rows': 8,
+                    'placeholder': 'Tell the community about yourself. Markdown is supported.',
+                    'id': 'profile-bio-editor',
                 }
             ),
             'website': forms.URLInput(
@@ -105,6 +108,12 @@ class ProfileUpdateForm(forms.ModelForm):
                     'placeholder': 'https://github.com/username',
                 }
             ),
+            'x_url': forms.URLInput(
+                attrs={
+                    'class': 'form-control',
+                    'placeholder': 'https://x.com/username',
+                }
+            ),
             'location': forms.TextInput(
                 attrs={'class': 'form-control', 'placeholder': 'City, Country'}
             ),
@@ -117,6 +126,19 @@ class ProfileUpdateForm(forms.ModelForm):
         ):
             raise forms.ValidationError('Enter a valid github.com profile URL.')
         return github_url
+
+    def clean_x_url(self):
+        x_url = self.cleaned_data.get('x_url', '')
+        if x_url and not x_url.lower().startswith(
+            (
+                'https://x.com/',
+                'http://x.com/',
+                'https://twitter.com/',
+                'http://twitter.com/',
+            )
+        ):
+            raise forms.ValidationError('Enter a valid x.com profile URL.')
+        return x_url
 
 
 class ChangePasswordForm(forms.Form):

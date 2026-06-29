@@ -22,7 +22,8 @@ class QuestionForm(forms.ModelForm):
         widgets = {
             'title': forms.TextInput(attrs={
                 'placeholder': 'What is your question? Be specific.',
-                'class': 'question-title-input'
+                'class': 'form-control question-title-input',
+                'autocomplete': 'off',
             }),
             'content': forms.Textarea(attrs={
                 'rows': 12,
