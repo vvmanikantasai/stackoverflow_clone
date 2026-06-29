@@ -43,7 +43,6 @@
       </button>
       {% if request.user.is_authenticated %}
         <a href="{% url 'ask_question' %}" class="btn btn-primary">Ask Question</a>
-        <a href="{% url 'notifications' %}" class="topbar-icon" title="Notifications"><span class="material-symbols-outlined">inbox</span></a>
         <div class="avatar-menu">
           <button class="avatar-btn" type="button" aria-label="User menu">
             <img src="{% if request.user.profile.avatar %}{{ request.user.profile.get_avatar_url }}{% else %}{% static 'images/default_avatar.svg' %}{% endif %}" alt="{{ request.user.username }}">
@@ -55,7 +54,6 @@
             </div>
             <a href="{% url 'profile' request.user.username %}" class="dropdown-item"><span class="material-symbols-outlined">person</span> My Profile</a>
             <a href="{% url 'saved_questions' %}" class="dropdown-item"><span class="material-symbols-outlined">bookmark</span> Saved Questions</a>
-            <a href="{% url 'notifications' %}" class="dropdown-item"><span class="material-symbols-outlined">notifications</span> Notifications {% if unread_notifications > 0 %}<span class="notif-badge" style="position:static;margin-left:auto;">{{ unread_notifications }}</span>{% endif %}</a>
             <hr class="dropdown-divider">
             <a href="{% url 'edit_profile' %}" class="dropdown-item"><span class="material-symbols-outlined">settings</span> Edit Profile</a>
             <a href="{% url 'toggle_dark_mode' %}" class="dropdown-item"><span class="material-symbols-outlined">{% if request.user.profile.dark_mode %}light_mode{% else %}dark_mode{% endif %}</span> {% if request.user.profile.dark_mode %}Light Mode{% else %}Dark Mode{% endif %}</a>
@@ -125,12 +123,6 @@
         <li>
           <a href="{% url 'saved_questions' %}" class="sidebar-link {% if request.resolver_match.url_name == 'saved_questions' %}active{% endif %}">
             <span class="sidebar-icon material-symbols-outlined">bookmark</span> Saved
-          </a>
-        </li>
-        <li>
-          <a href="{% url 'notifications' %}" class="sidebar-link {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}">
-            <span class="sidebar-icon material-symbols-outlined">notifications</span> Notifications
-            {% if unread_notifications > 0 %}<span class="notif-badge" style="position:static;margin-left:auto;">{{ unread_notifications }}</span>{% endif %}
           </a>
         </li>
       {% endif %}

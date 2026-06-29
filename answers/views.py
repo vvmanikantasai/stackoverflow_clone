@@ -5,7 +5,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.models import ReputationHistory
 from badges.utils import check_and_award_badges
-from notifications.utils import create_notification
 from questions.models import Question
 
 from .forms import AnswerForm
@@ -27,14 +26,6 @@ def post_answer_view(request, question_pk):
             answer.save()
             Question.objects.filter(pk=question.pk).update(answer_count=F('answer_count') + 1)
             check_and_award_badges(request.user)
-            if question.author != request.user:
-                create_notification(
-                    recipient=question.author,
-                    sender=request.user,
-                    notification_type='new_answer',
-                    message=f'{request.user.username} answered your question: {question.title}',
-                    url=question.get_absolute_url()
-                )
             messages.success(request, 'Answer posted!')
         else:
             messages.error(request, 'Please fix the errors below.')
@@ -101,15 +92,6 @@ def accept_answer_view(request, pk):
             question=question,
             answer=answer
         )
-
-        if answer.author != request.user:
-            create_notification(
-                recipient=answer.author,
-                sender=request.user,
-                notification_type='answer_accepted',
-                message=f'Your answer was accepted on: {question.title}',
-                url=question.get_absolute_url()
-            )
 
         check_and_award_badges(answer.author)
         messages.success(request, 'Answer accepted!')

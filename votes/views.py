@@ -5,7 +5,6 @@ from django.shortcuts import get_object_or_404
 
 from accounts.models import ReputationHistory
 from answers.models import Answer
-from notifications.utils import create_notification
 from questions.models import Question
 
 from .models import Vote
@@ -135,20 +134,6 @@ def vote_view(request, content_type, object_id, value):
     apply_reputation(target.author, target, value)
     target.vote_count += value
     target.save(update_fields=['vote_count'])
-
-    if value == 1:
-        if isinstance(target, Question):
-            target_url = target.get_absolute_url()
-        else:
-            target_url = target.question.get_absolute_url()
-
-        create_notification(
-            recipient=target.author,
-            sender=request.user,
-            notification_type='upvote',
-            message=f'{request.user.username} upvoted your {content_type}',
-            url=target_url,
-        )
 
     return JsonResponse({
         'vote_count': target.vote_count,

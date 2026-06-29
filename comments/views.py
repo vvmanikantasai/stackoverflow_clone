@@ -6,7 +6,6 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 
 from answers.models import Answer
-from notifications.utils import create_notification
 from questions.models import Question
 from votes.models import Vote
 
@@ -45,8 +44,6 @@ def add_comment_view(request, content_type, object_id):
     if not target:
         return JsonResponse({'error': 'Invalid'}, status=400)
 
-    target_author = target.author
-
     if request.method == 'POST':
         form = CommentForm(request.POST)
         if form.is_valid():
@@ -70,26 +67,6 @@ def add_comment_view(request, content_type, object_id):
                 object_id=object_id,
                 parent=parent,
             )
-
-            recipient = target_author
-            if parent and parent.author != request.user:
-                recipient = parent.author
-
-            if recipient != request.user:
-                if parent:
-                    message = f'{request.user.username} replied to your comment'
-                else:
-                    message = (
-                        f'{request.user.username} commented on your {content_type}'
-                    )
-
-                create_notification(
-                    recipient=recipient,
-                    sender=request.user,
-                    notification_type='new_comment',
-                    message=message,
-                    url=get_question_url(target),
-                )
 
             if is_ajax(request):
                 return JsonResponse({

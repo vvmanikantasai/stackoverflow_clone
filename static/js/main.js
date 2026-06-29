@@ -32,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initMobileSearch();
   initConfirmations();
   initCharacterCounters();
-  initMarkAllNotificationsRead();
 });
 
 // ===== VOTING =====
@@ -522,33 +521,6 @@ function initCharacterCounters() {
         ? 'var(--red)'
         : 'var(--text-muted)';
     });
-  });
-}
-
-// ===== NOTIFICATION MARK READ =====
-function initMarkAllNotificationsRead() {
-  const button = document.getElementById('mark-all-read');
-  if (!button) return;
-
-  button.addEventListener('click', async function () {
-    await fetch('/notifications/mark-read/', {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': getCsrfToken(),
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    });
-
-    document.querySelectorAll('.notification-item.unread').forEach(item => {
-      item.classList.remove('unread');
-    });
-
-    const badge = document.querySelector('.notif-badge');
-    if (badge) {
-      badge.remove();
-    }
-
-    showToast('All notifications marked as read.', 'success');
   });
 }
 

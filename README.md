@@ -12,7 +12,6 @@ A simple Q&A web application built with Django, PostgreSQL, HTML, CSS, and JavaS
 * Search questions by title
 * Tags and bookmarks
 * User profiles
-* Notifications
 * Responsive design
 
 ## Tech Stack
@@ -60,7 +59,6 @@ stackit/
 ├── comments/
 ├── votes/
 ├── tags/
-├── notifications/
 ├── templates/
 ├── static/
 ├── media/

@@ -145,35 +145,6 @@ a:hover { color: var(--text-link-hover); }
 .btn-green { background: var(--green); color: white; border-color: var(--green); }
 .btn-sm { padding: 4px 10px; font-size: 12px; }
 
-.notif-btn {
-  position: relative;
-  padding: 7px 10px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text-secondary);
-  cursor: pointer;
-  text-decoration: none;
-  font-size: 18px;
-  transition: all var(--transition);
-  display: flex;
-  align-items: center;
-}
-.notif-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
-.notif-badge {
-  position: absolute;
-  top: -4px; right: -4px;
-  background: var(--red);
-  color: white;
-  border-radius: 50%;
-  width: 18px; height: 18px;
-  font-size: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-}
-
 .avatar-menu { position: relative; }
 .avatar-btn {
   width: 34px; height: 34px;
@@ -978,25 +949,6 @@ textarea.form-control { resize: vertical; min-height: 120px; line-height: 1.5; }
   color: var(--text-primary);
 }
 
-/* ===== NOTIFICATIONS ===== */
-.notification-list { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-.notification-item {
-  display: flex;
-  gap: 12px;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg);
-  transition: background var(--transition);
-}
-.notification-item:last-child { border-bottom: none; }
-.notification-item:hover { background: var(--bg-secondary); }
-.notification-item.unread { background: var(--blue-bg); }
-.notification-icon { font-size: 20px; flex-shrink: 0; }
-.notification-body { flex: 1; }
-.notification-msg { font-size: 14px; color: var(--text-primary); }
-.notification-msg a { color: var(--text-link); }
-.notification-time { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-
 /* ===== MESSAGES ===== */
 .messages-container { margin-bottom: 16px; }
 .message {
@@ -1295,15 +1247,6 @@ body {
 .btn-secondary:hover {
   background: #b3d3ea;
   color: #2c5877;
-}
-
-.notif-btn {
-  height: 34px;
-  border: 0;
-  border-radius: 0;
-  padding: 0 10px;
-  font-size: 12px;
-  color: #6a737c;
 }
 
 .avatar-btn {

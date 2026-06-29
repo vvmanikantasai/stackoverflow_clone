@@ -12,7 +12,6 @@ urlpatterns = [
     path('comments/', include('comments.urls')),
     path('tags/', include('tags.urls')),
     path('badges/', include('badges.urls')),
-    path('notifications/', include('notifications.urls')),
     path('reports/', include('reports.urls')),
     path('votes/', include('votes.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
