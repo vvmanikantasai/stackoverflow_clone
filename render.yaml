@@ -1,12 +1,14 @@
 databases:
-  - name: stackit-db
+  - name: manikanta-stackoverflow-db
     plan: free
     databaseName: stackit
     user: stackit
 
 services:
   - type: web
-    name: stackit-web
+    name: manikanta-stackoverflow-web
+    repo: https://github.com/vvmanikantasai/stackoverflow_clone.git
+    branch: main
     runtime: python
     plan: free
     buildCommand: ./build.sh
@@ -15,7 +17,7 @@ services:
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: stackit-db
+          name: manikanta-stackoverflow-db
           property: connectionString
       - key: DJANGO_SECRET_KEY
         generateValue: true
