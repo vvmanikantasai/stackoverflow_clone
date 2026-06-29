@@ -1,9 +1,11 @@
-from django.shortcuts import render, get_object_or_404
-from django.db.models import Count
 from django.core.paginator import Paginator
+from django.db.models import Count
 from django.http import JsonResponse
-from .models import Tag
+from django.shortcuts import get_object_or_404, render
+
 from questions.models import Question
+
+from .models import Tag
 
 
 def tags_list_view(request):
@@ -27,7 +29,11 @@ def tags_list_view(request):
 
 def tag_detail_view(request, slug):
     tag = get_object_or_404(Tag, slug=slug)
-    questions = Question.objects.filter(tags=tag, is_deleted=False).select_related('author').order_by('-created_at')
+    questions = (
+        Question.objects.filter(tags=tag, is_deleted=False)
+        .select_related('author')
+        .order_by('-created_at')
+    )
     paginator = Paginator(questions, 15)
     page = paginator.get_page(request.GET.get('page', 1))
     return render(request, 'tags/detail.html', {'tag': tag, 'page': page})

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.urls import reverse
 from django.utils.text import slugify
 
 from tags.models import Tag
@@ -39,7 +40,7 @@ class Question(models.Model):
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return f'/questions/{self.slug}/'
+        return reverse('question_detail', kwargs={'slug': self.slug})
 
     @property
     def has_accepted_answer(self):

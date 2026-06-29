@@ -8,6 +8,7 @@ class Vote(models.Model):
     VOTE_CHOICES = [(1, 'Upvote'), (-1, 'Downvote')]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='votes')
     value = models.SmallIntegerField(choices=VOTE_CHOICES)
+    # Votes can point to questions, answers, or comments.
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')

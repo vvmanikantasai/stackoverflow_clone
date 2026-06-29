@@ -11,6 +11,12 @@ from questions.models import Question
 from .models import Vote
 
 
+QUESTION_UPVOTE_POINTS = 5
+QUESTION_DOWNVOTE_POINTS = -2
+ANSWER_UPVOTE_POINTS = 10
+ANSWER_DOWNVOTE_POINTS = -2
+
+
 def get_vote_target(content_type, object_id):
     if content_type == 'question':
         target = get_object_or_404(Question, pk=object_id)
@@ -28,21 +34,21 @@ def get_vote_target(content_type, object_id):
 def apply_reputation(user, target_obj, vote_value, is_removal=False):
     if isinstance(target_obj, Question):
         if vote_value == 1:
-            points = 5
+            points = QUESTION_UPVOTE_POINTS
             action = 'question_upvote'
             description = f'Question upvoted: {target_obj.title}'
         else:
-            points = -2
+            points = QUESTION_DOWNVOTE_POINTS
             action = 'question_downvote'
             description = f'Question downvoted: {target_obj.title}'
 
     elif isinstance(target_obj, Answer):
         if vote_value == 1:
-            points = 10
+            points = ANSWER_UPVOTE_POINTS
             action = 'answer_upvote'
             description = 'Answer upvoted'
         else:
-            points = -2
+            points = ANSWER_DOWNVOTE_POINTS
             action = 'answer_downvote'
             description = 'Answer downvoted'
 

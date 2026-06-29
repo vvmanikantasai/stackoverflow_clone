@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
-{% load humanize markdown_extras %}
+{% load static humanize markdown_extras %}
 {% block title %}{{ profile_user.username }} – StackIt{% endblock %}
 {% block content %}
 <main class="main-content">
   <div class="profile-header">
-    <img class="profile-avatar" src="{% if profile.avatar %}{{ profile.get_avatar_url }}{% else %}/static/images/default_avatar.svg{% endif %}" alt="{{ profile_user.username }}">
+    <img class="profile-avatar" src="{% if profile.avatar %}{{ profile.get_avatar_url }}{% else %}{% static 'images/default_avatar.svg' %}{% endif %}" alt="{{ profile_user.username }}">
     <div class="profile-info" style="flex:1;">
       <h1>{{ profile_user.username }}</h1>
       {% if profile_user.first_name or profile_user.last_name %}

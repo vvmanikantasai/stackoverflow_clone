@@ -12,7 +12,13 @@ class Notification(models.Model):
         ('badge', 'Badge Awarded'),
     ]
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
-    sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_notifications')
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sent_notifications',
+    )
     notification_type = models.CharField(max_length=30, choices=TYPE_CHOICES)
     message = models.TextField()
     url = models.CharField(max_length=500, blank=True)

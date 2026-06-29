@@ -1,3 +1,5 @@
+from django.urls import reverse
+
 from .models import Badge, UserBadge
 from notifications.utils import create_notification
 
@@ -64,5 +66,5 @@ def check_and_award_badges(user):
             sender=None,
             notification_type='badge',
             message=f'You earned the "{badge_name}" badge!',
-            url='/badges/',
+            url=reverse('badges'),
         )

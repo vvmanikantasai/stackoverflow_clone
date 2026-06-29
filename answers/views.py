@@ -12,6 +12,9 @@ from .forms import AnswerForm
 from .models import Answer
 
 
+ACCEPTED_ANSWER_POINTS = 15
+
+
 @login_required
 def post_answer_view(request, question_pk):
     question = get_object_or_404(Question, pk=question_pk, is_deleted=False)
@@ -88,12 +91,12 @@ def accept_answer_view(request, pk):
         answer.is_accepted = True
         answer.save(update_fields=['is_accepted'])
 
-        answer.author.profile.reputation += 15
+        answer.author.profile.reputation += ACCEPTED_ANSWER_POINTS
         answer.author.profile.save(update_fields=['reputation'])
         ReputationHistory.objects.create(
             user=answer.author,
             action='answer_accepted',
-            points=15,
+            points=ACCEPTED_ANSWER_POINTS,
             description=f'Answer accepted on: {question.title}',
             question=question,
             answer=answer

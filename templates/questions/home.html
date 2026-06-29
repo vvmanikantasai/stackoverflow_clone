@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load humanize markdown_extras %}
+{% load static humanize markdown_extras %}
 {% block title %}{% if search %}Search: {{ search }} - {% endif %}Stack Overflow{% endblock %}
 
 {% block content %}
@@ -60,7 +60,7 @@
               {% endfor %}
             </div>
             <div class="author-info">
-              <img class="author-avatar" src="{% if question.author.profile.avatar %}{{ question.author.profile.get_avatar_url }}{% else %}/static/images/default_avatar.svg{% endif %}" alt="">
+              <img class="author-avatar" src="{% if question.author.profile.avatar %}{{ question.author.profile.get_avatar_url }}{% else %}{% static 'images/default_avatar.svg' %}{% endif %}" alt="">
               <a href="{% url 'profile' question.author.username %}" class="author-name">{{ question.author.username }}</a>
               <span class="rep-badge">{{ question.author.profile.reputation }}</span>
               <span>asked {{ question.created_at|naturaltime }}</span>
@@ -156,7 +156,7 @@
     <div class="widget-body">
       {% for user in top_contributors %}
       <div class="widget-item">
-        <img src="{% if user.profile.avatar %}{{ user.profile.get_avatar_url }}{% else %}/static/images/default_avatar.svg{% endif %}" style="width:24px;height:24px;border-radius:3px;object-fit:cover;" alt="">
+        <img src="{% if user.profile.avatar %}{{ user.profile.get_avatar_url }}{% else %}{% static 'images/default_avatar.svg' %}{% endif %}" style="width:24px;height:24px;border-radius:3px;object-fit:cover;" alt="">
         <a href="{% url 'profile' user.username %}">{{ user.username }}</a>
         <span class="count">{{ user.profile.reputation }} rep</span>
       </div>

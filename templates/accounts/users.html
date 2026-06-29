@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Users – StackIt{% endblock %}
 {% block content %}
 <main class="main-content">
@@ -18,7 +19,7 @@
   <div class="users-grid">
     {% for user in page.object_list %}
     <a href="{% url 'profile' user.username %}" class="user-card">
-      <img src="{% if user.profile.avatar %}{{ user.profile.get_avatar_url }}{% else %}/static/images/default_avatar.svg{% endif %}" alt="{{ user.username }}">
+      <img src="{% if user.profile.avatar %}{{ user.profile.get_avatar_url }}{% else %}{% static 'images/default_avatar.svg' %}{% endif %}" alt="{{ user.username }}">
       <div class="username">{{ user.username }}</div>
       <div class="reputation">{{ user.profile.reputation }} reputation</div>
       <div class="badge-count">{{ user.profile.badges_count }} badge{{ user.profile.badges_count|pluralize }}</div>

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load humanize markdown_extras %}
+{% load static humanize markdown_extras %}
 {% block title %}{{ question.title }} - Stack Overflow{% endblock %}
 {% block meta_desc %}{{ question.content|render_markdown|striptags|truncatechars:160 }}{% endblock %}
 
@@ -82,7 +82,7 @@
         <div class="post-author-card">
           <div class="posted-label">asked {{ question.created_at|date:"M d, Y 'at' H:i" }}</div>
           <div class="author-row">
-            <img src="{% if question.author.profile.avatar %}{{ question.author.profile.get_avatar_url }}{% else %}/static/images/default_avatar.svg{% endif %}" alt="{{ question.author.username }}">
+            <img src="{% if question.author.profile.avatar %}{{ question.author.profile.get_avatar_url }}{% else %}{% static 'images/default_avatar.svg' %}{% endif %}" alt="{{ question.author.username }}">
             <div>
               <a href="{% url 'profile' question.author.username %}" class="author-name">{{ question.author.username }}</a>
               <div class="author-rep">{{ question.author.profile.reputation }} rep</div>
@@ -173,7 +173,7 @@
           <div class="post-author-card" style="background:var(--green-bg);border-color:rgba(46,125,50,0.3);">
             <div class="posted-label">answered {{ answer.created_at|date:"M d, Y 'at' H:i" }}</div>
             <div class="author-row">
-              <img src="{% if answer.author.profile.avatar %}{{ answer.author.profile.get_avatar_url }}{% else %}/static/images/default_avatar.svg{% endif %}" alt="{{ answer.author.username }}">
+              <img src="{% if answer.author.profile.avatar %}{{ answer.author.profile.get_avatar_url }}{% else %}{% static 'images/default_avatar.svg' %}{% endif %}" alt="{{ answer.author.username }}">
               <div>
                 <a href="{% url 'profile' answer.author.username %}" class="author-name">{{ answer.author.username }}</a>
                 <div class="author-rep">{{ answer.author.profile.reputation }} rep</div>

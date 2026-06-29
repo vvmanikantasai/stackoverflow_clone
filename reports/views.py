@@ -1,11 +1,13 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
-from .models import Report
-from questions.models import Question
+from django.shortcuts import get_object_or_404, redirect, render
+
 from answers.models import Answer
 from comments.models import Comment
+from questions.models import Question
+
+from .models import Report
 
 
 @login_required

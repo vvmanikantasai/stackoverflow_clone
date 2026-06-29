@@ -6,8 +6,14 @@ from .models import Question
 class QuestionForm(forms.ModelForm):
     tags_input = forms.CharField(
         required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. python django javascript', 'id': 'id_tags_input'}),
-        help_text='Enter tags separated by spaces'
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g. python django javascript',
+                'id': 'id_tags_input',
+            }
+        ),
+        help_text='Enter tags separated by spaces',
     )
 
     class Meta:
