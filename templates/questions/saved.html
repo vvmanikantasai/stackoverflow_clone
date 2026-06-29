@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Saved Questions – StackIt{% endblock %}
+{% block content %}
+<main class="main-content">
+  <div class="page-header">
+    <h1>🔖 Saved Questions</h1>
+  </div>
+  {% if page.object_list %}
+    <div class="question-list">
+      {% for question in page.object_list %}
+      <div class="question-card">
+        <div class="question-stats">
+          <div class="stat-item"><span class="stat-number">{{ question.vote_count }}</span><span>votes</span></div>
+          <div class="stat-item {% if question.has_accepted_answer %}has-accepted{% elif question.answer_count > 0 %}has-answers{% endif %}">
+            <span class="stat-number">{{ question.answer_count }}</span><span>answers</span>
+          </div>
+        </div>
+        <div class="question-body">
+          <div class="question-title"><a href="{{ question.get_absolute_url }}">{{ question.title }}</a></div>
+          <div class="question-meta">
+            <div class="tags-list">{% for tag in question.tags.all %}<a href="{% url 'tag_detail' tag.slug %}" class="tag">{{ tag.name }}</a>{% endfor %}</div>
+            <div class="author-info"><a href="{% url 'profile' question.author.username %}" class="author-name">{{ question.author.username }}</a></div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🔖</div>
+      <h3>No saved questions yet</h3>
+      <p>Bookmark questions you want to revisit later.</p>
+      <a href="{% url 'home' %}" class="btn btn-primary">Browse Questions</a>
+    </div>
+  {% endif %}
+</main>
+<aside class="right-sidebar"></aside>
+{% endblock %}

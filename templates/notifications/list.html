@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Notifications – StackIt{% endblock %}
+{% block content %}
+<main class="main-content">
+  <div class="page-header">
+    <h1>Notifications</h1>
+    {% if page.object_list %}
+    <button id="mark-all-read" class="btn btn-ghost btn-sm">Mark all read</button>
+    {% endif %}
+  </div>
+  {% if page.object_list %}
+  <div class="notification-list">
+    {% for notif in page.object_list %}
+    <div class="notification-item {% if not notif.is_read %}unread{% endif %}">
+      <span class="notification-icon">
+        {% if notif.notification_type == 'new_answer' %}💬
+        {% elif notif.notification_type == 'new_comment' %}🗨️
+        {% elif notif.notification_type == 'answer_accepted' %}✅
+        {% elif notif.notification_type == 'upvote' %}⬆️
+        {% elif notif.notification_type == 'badge' %}🏅
+        {% else %}🔔{% endif %}
+      </span>
+      <div class="notification-body">
+        <div class="notification-msg">
+          {% if notif.url %}<a href="{{ notif.url }}">{{ notif.message }}</a>{% else %}{{ notif.message }}{% endif %}
+        </div>
+        <div class="notification-time">{{ notif.created_at|naturaltime }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">🔔</div>
+    <h3>No notifications yet</h3>
+    <p>You'll be notified when someone answers your question, comments, or upvotes.</p>
+  </div>
+  {% endif %}
+</main>
+<aside class="right-sidebar"></aside>
+{% endblock %}

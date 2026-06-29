@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Edit Question – StackIt{% endblock %}
+{% block content %}
+<main class="main-content ask-page">
+  <div class="page-header">
+    <h1>Edit Question</h1>
+    <a href="{{ question.get_absolute_url }}" class="btn btn-ghost">Cancel</a>
+  </div>
+  <div class="form-card">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        {{ form.title }}
+        {% if form.title.errors %}<div class="form-error">{{ form.title.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <div class="editor-wrap">
+          <div class="editor-toolbar">
+            <button type="button" class="editor-btn" data-action="bold" data-target="question-editor"><b>B</b></button>
+            <button type="button" class="editor-btn" data-action="italic" data-target="question-editor"><i>I</i></button>
+            <div class="editor-sep"></div>
+            <button type="button" class="editor-btn" data-action="code" data-target="question-editor">`</button>
+            <button type="button" class="editor-btn" data-action="code-block" data-target="question-editor">{ }</button>
+            <button type="button" class="editor-btn" data-action="link" data-target="question-editor">🔗</button>
+          </div>
+          <textarea name="content" id="question-editor" class="form-control" rows="12">{{ form.content.value }}</textarea>
+          <div class="preview-toggle-bar">
+            <button type="button" class="preview-tab-btn active" data-mode="write" data-target="question-editor" data-preview="question-preview">Write</button>
+            <button type="button" class="preview-tab-btn" data-mode="preview" data-target="question-editor" data-preview="question-preview">Preview</button>
+          </div>
+          <div class="md-preview post-body" id="question-preview"></div>
+        </div>
+        {% if form.content.errors %}<div class="form-error">{{ form.content.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tags</label>
+        {{ form.tags_input }}
+        {% if form.tags_input.errors %}<div class="form-error">{{ form.tags_input.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{{ question.get_absolute_url }}" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</main>
+<aside class="right-sidebar"></aside>
+{% endblock %}

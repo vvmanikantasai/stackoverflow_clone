@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Sign Up – StackIt{% endblock %}
+{% block content %}
+<main style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px 16px;background:var(--bg-secondary);">
+  <div class="auth-card" style="max-width:420px;width:100%;">
+    <div class="auth-logo">
+      <span class="logo-text">🚀 StackIt</span>
+      <span class="logo-sub">Join the developer community</span>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" class="form-control" placeholder="Username" value="{{ form.username.value|default:'' }}">
+        {% if form.username.errors %}<div class="form-error">{{ form.username.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-control" placeholder="Email address" value="{{ form.email.value|default:'' }}">
+        {% if form.email.errors %}<div class="form-error">{{ form.email.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password1" class="form-control" placeholder="Password (min 8 chars, 1 uppercase, 1 digit)">
+        {% if form.password1.errors %}<div class="form-error">{{ form.password1.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm Password</label>
+        <input type="password" name="password2" class="form-control" placeholder="Confirm password">
+        {% if form.password2.errors %}<div class="form-error">{{ form.password2.errors.0 }}</div>{% endif %}
+      </div>
+      {% if form.non_field_errors %}<div class="message error" style="margin-bottom:12px;">{{ form.non_field_errors.0 }}</div>{% endif %}
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Create Account</button>
+    </form>
+    <div class="auth-footer">Already have an account? <a href="{% url 'login' %}">Log in</a></div>
+  </div>
+</main>
+<div></div>
+{% endblock %}

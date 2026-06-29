@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Tags – StackIt{% endblock %}
+{% block content %}
+<main class="main-content">
+  <div class="page-header"><h1>Tags</h1></div>
+  <p class="text-muted text-sm" style="margin-bottom:16px;">A tag is a keyword or label that categorizes your question with other, similar questions.</p>
+  <div style="margin-bottom:20px;max-width:360px;">
+    <form method="get">
+      <div style="display:flex;gap:8px;">
+        <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Search tags…">
+        <button type="submit" class="btn btn-ghost">Filter</button>
+      </div>
+    </form>
+  </div>
+  <div class="tags-grid">
+    {% for tag in page.object_list %}
+    <div class="tag-card">
+      <a href="{% url 'tag_detail' tag.slug %}" class="tag">{{ tag.name }}</a>
+      <div class="tag-description">{{ tag.description|default:"No description yet."|truncatechars:80 }}</div>
+      <div class="tag-usage">{{ tag.usage }} question{{ tag.usage|pluralize }} tagged</div>
+    </div>
+    {% empty %}
+    <div class="empty-state" style="grid-column:1/-1;">
+      <div class="empty-icon">🏷️</div>
+      <h3>No tags found</h3>
+      <p>Tags are created automatically when you ask a question.</p>
+    </div>
+    {% endfor %}
+  </div>
+</main>
+<aside class="right-sidebar"></aside>
+{% endblock %}

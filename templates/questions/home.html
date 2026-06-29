@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load humanize markdown_extras %}
+{% block title %}{% if search %}Search: {{ search }} - {% endif %}Stack Overflow{% endblock %}
+
+{% block content %}
+<main class="main-content">
+  {% if search %}
+    <div class="page-header">
+      <h1>Search results for "{{ search }}"</h1>
+      <a href="{% url 'home' %}" class="btn btn-ghost btn-sm">Clear search</a>
+    </div>
+    <p class="search-result-count">{{ total_questions }} result{{ total_questions|pluralize }} found</p>
+  {% else %}
+    <div class="page-header">
+      <h1>All Questions</h1>
+      <a href="{% url 'ask_question' %}" class="btn btn-primary">Ask Question</a>
+    </div>
+  {% endif %}
+
+  {% if not search %}
+  <div class="question-controls">
+    <p class="question-count">{{ total_questions|intcomma }} question{{ total_questions|pluralize }}</p>
+    <div class="filter-tabs">
+      <a href="?filter=newest" class="filter-tab {% if filter_by == 'newest' %}active{% endif %}">Newest</a>
+      <a href="?filter=active" class="filter-tab {% if filter_by == 'active' %}active{% endif %}">Active</a>
+      <a href="?filter=votes" class="filter-tab {% if filter_by == 'votes' %}active{% endif %}">Most Voted</a>
+      <a href="?filter=unanswered" class="filter-tab {% if filter_by == 'unanswered' %}active{% endif %}">Unanswered</a>
+      <a href="?filter=views" class="filter-tab {% if filter_by == 'views' %}active{% endif %}">Most Viewed</a>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if page.object_list %}
+    <div class="question-list">
+      {% for question in page.object_list %}
+      <div class="question-card">
+        <div class="question-stats">
+          <div class="stat-item">
+            <span class="stat-number">{{ question.vote_count }}</span>
+            <span>vote{{ question.vote_count|pluralize }}</span>
+          </div>
+          <div class="stat-item {% if question.has_accepted_answer %}has-accepted{% elif question.answer_count > 0 %}has-answers{% endif %}">
+            <span class="stat-number">{{ question.answer_count }}</span>
+            <span>answer{{ question.answer_count|pluralize }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ question.view_count }}</span>
+            <span>view{{ question.view_count|pluralize }}</span>
+          </div>
+        </div>
+        <div class="question-body">
+          <div class="question-title">
+            <a href="{{ question.get_absolute_url }}">{{ question.title }}</a>
+          </div>
+          <div class="question-excerpt">{{ question.content|render_markdown|striptags|truncatechars:150 }}</div>
+          <div class="question-meta">
+            <div class="tags-list">
+              {% for tag in question.tags.all %}
+                <a href="{% url 'tag_detail' tag.slug %}" class="tag">{{ tag.name }}</a>
+              {% endfor %}
+            </div>
+            <div class="author-info">
+              <img class="author-avatar" src="{% if question.author.profile.avatar %}{{ question.author.profile.get_avatar_url }}{% else %}/static/images/default_avatar.svg{% endif %}" alt="">
+              <a href="{% url 'profile' question.author.username %}" class="author-name">{{ question.author.username }}</a>
+              <span class="rep-badge">{{ question.author.profile.reputation }}</span>
+              <span>asked {{ question.created_at|naturaltime }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- PAGINATION -->
+    {% if page.has_other_pages %}
+    <div class="pagination">
+      {% if page.has_previous %}
+        <a href="?{% if search %}q={{ search }}&{% endif %}{% if filter_by %}filter={{ filter_by }}&{% endif %}page=1" class="page-link">«</a>
+        <a href="?{% if search %}q={{ search }}&{% endif %}{% if filter_by %}filter={{ filter_by }}&{% endif %}page={{ page.previous_page_number }}" class="page-link">‹</a>
+      {% else %}
+        <span class="page-link disabled">«</span>
+        <span class="page-link disabled">‹</span>
+      {% endif %}
+
+      {% for num in page.paginator.page_range %}
+        {% if page.number == num %}
+          <span class="page-link active">{{ num }}</span>
+        {% elif num > page.number|add:'-3' and num < page.number|add:'3' %}
+          <a href="?{% if search %}q={{ search }}&{% endif %}{% if filter_by %}filter={{ filter_by }}&{% endif %}page={{ num }}" class="page-link">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+
+      {% if page.has_next %}
+        <a href="?{% if search %}q={{ search }}&{% endif %}{% if filter_by %}filter={{ filter_by }}&{% endif %}page={{ page.next_page_number }}" class="page-link">›</a>
+        <a href="?{% if search %}q={{ search }}&{% endif %}{% if filter_by %}filter={{ filter_by }}&{% endif %}page={{ page.paginator.num_pages }}" class="page-link">»</a>
+      {% else %}
+        <span class="page-link disabled">›</span>
+        <span class="page-link disabled">»</span>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">❓</div>
+      <h3>{% if search %}No results found{% else %}No questions yet{% endif %}</h3>
+      <p>{% if search %}Try different keywords or browse all questions.{% else %}Be the first to ask a question!{% endif %}</p>
+      <a href="{% url 'ask_question' %}" class="btn btn-primary">Ask a Question</a>
+    </div>
+  {% endif %}
+</main>
+
+<!-- RIGHT SIDEBAR -->
+<aside class="right-sidebar">
+  {% if not request.user.is_authenticated %}
+  <div class="sidebar-widget">
+    <div class="widget-header">Join Stack Overflow</div>
+    <div class="widget-body" style="padding:16px;">
+      <p style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">Get answers from experts. Share what you know.</p>
+      <a href="{% url 'register' %}" class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:8px;">Sign Up</a>
+      <a href="{% url 'login' %}" class="btn btn-ghost" style="width:100%;justify-content:center;">Log In</a>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="sidebar-widget so-yellow-widget">
+    <div class="widget-header">Hot Questions</div>
+    <div class="widget-body">
+      {% for q in hot_questions %}
+      <div class="widget-item blog-item">
+        <span class="mini-icon material-symbols-outlined">local_fire_department</span>
+        <a href="{{ q.get_absolute_url }}">{{ q.title|truncatechars:60 }}</a>
+        <span class="count">{{ q.view_count }} views</span>
+      </div>
+      {% empty %}
+      <p class="text-muted text-sm" style="padding:12px 16px;">No questions yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="sidebar-widget">
+    <div class="widget-header">Trending Tags</div>
+    <div class="widget-body">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;padding:12px 16px;">
+        {% for tag in trending_tags %}
+          <a href="{% url 'tag_detail' tag.slug %}" class="tag">{{ tag.name }} <span style="opacity:0.7;">× {{ tag.usage }}</span></a>
+        {% empty %}
+          <p class="text-muted text-sm">No tags yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-widget">
+    <div class="widget-header">Top Contributors</div>
+    <div class="widget-body">
+      {% for user in top_contributors %}
+      <div class="widget-item">
+        <img src="{% if user.profile.avatar %}{{ user.profile.get_avatar_url }}{% else %}/static/images/default_avatar.svg{% endif %}" style="width:24px;height:24px;border-radius:3px;object-fit:cover;" alt="">
+        <a href="{% url 'profile' user.username %}">{{ user.username }}</a>
+        <span class="count">{{ user.profile.reputation }} rep</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</aside>
+{% endblock %}

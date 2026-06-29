@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}{{ connection_type }} - {{ profile_user.username }}{% endblock %}
+{% block content %}
+<main class="main-content">
+  <div class="page-header">
+    <div>
+      <h1>{{ connection_type }}</h1>
+      <p class="text-muted">{{ profile_user.username }}</p>
+    </div>
+    <a href="{% url 'profile' profile_user.username %}" class="btn btn-ghost">Back to profile</a>
+  </div>
+
+  <div class="users-grid">
+    {% for user in users %}
+      <a href="{% url 'profile' user.username %}" class="user-card">
+        <img src="{{ user.profile.get_avatar_url }}" alt="{{ user.username }}">
+        <span class="username">{{ user.username }}</span>
+        <span class="reputation">{{ user.profile.reputation }} reputation</span>
+      </a>
+    {% empty %}
+      <p class="text-muted">No {{ connection_type|lower }} yet.</p>
+    {% endfor %}
+  </div>
+</main>
+<aside class="right-sidebar"></aside>
+{% endblock %}

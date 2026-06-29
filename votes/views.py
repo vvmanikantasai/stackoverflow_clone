@@ -1,0 +1,150 @@
+from django.contrib.auth.decorators import login_required
+from django.contrib.contenttypes.models import ContentType
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+
+from accounts.models import ReputationHistory
+from answers.models import Answer
+from notifications.utils import create_notification
+from questions.models import Question
+
+from .models import Vote
+
+
+def get_vote_target(content_type, object_id):
+    if content_type == 'question':
+        target = get_object_or_404(Question, pk=object_id)
+        target_type = ContentType.objects.get_for_model(Question)
+        return target, target_type
+
+    if content_type == 'answer':
+        target = get_object_or_404(Answer, pk=object_id)
+        target_type = ContentType.objects.get_for_model(Answer)
+        return target, target_type
+
+    return None, None
+
+
+def apply_reputation(user, target_obj, vote_value, is_removal=False):
+    if isinstance(target_obj, Question):
+        if vote_value == 1:
+            points = 5
+            action = 'question_upvote'
+            description = f'Question upvoted: {target_obj.title}'
+        else:
+            points = -2
+            action = 'question_downvote'
+            description = f'Question downvoted: {target_obj.title}'
+
+    elif isinstance(target_obj, Answer):
+        if vote_value == 1:
+            points = 10
+            action = 'answer_upvote'
+            description = 'Answer upvoted'
+        else:
+            points = -2
+            action = 'answer_downvote'
+            description = 'Answer downvoted'
+
+    else:
+        return
+
+    if is_removal:
+        points = -points
+    elif isinstance(target_obj, Question):
+        ReputationHistory.objects.create(
+            user=user,
+            action=action,
+            points=points,
+            description=description,
+            question=target_obj,
+        )
+    else:
+        ReputationHistory.objects.create(
+            user=user,
+            action=action,
+            points=points,
+            description=description,
+            answer=target_obj,
+        )
+
+    user.profile.reputation = max(0, user.profile.reputation + points)
+    user.profile.save(update_fields=['reputation'])
+
+
+@login_required
+def vote_view(request, content_type, object_id, value):
+    if value not in [1, -1]:
+        return JsonResponse({'error': 'Invalid vote'}, status=400)
+
+    target, target_type = get_vote_target(content_type, object_id)
+    if not target:
+        return JsonResponse({'error': 'Invalid content type'}, status=400)
+
+    if target.author == request.user:
+        error = f'Cannot vote on your own {content_type}'
+        return JsonResponse({'error': error, 'vote_count': target.vote_count})
+
+    existing_vote = Vote.objects.filter(
+        user=request.user,
+        content_type=target_type,
+        object_id=object_id,
+    ).first()
+
+    if existing_vote:
+        if existing_vote.value == value:
+            apply_reputation(
+                target.author,
+                target,
+                existing_vote.value,
+                is_removal=True,
+            )
+            existing_vote.delete()
+            target.vote_count -= value
+            target.save(update_fields=['vote_count'])
+            return JsonResponse({
+                'vote_count': target.vote_count,
+                'user_vote': None,
+            })
+        old_value = existing_vote.value
+        apply_reputation(target.author, target, old_value, is_removal=True)
+        apply_reputation(target.author, target, value)
+
+        target.vote_count = target.vote_count - old_value + value
+        target.save(update_fields=['vote_count'])
+
+        existing_vote.value = value
+        existing_vote.save(update_fields=['value'])
+        return JsonResponse({
+            'vote_count': target.vote_count,
+            'user_vote': value,
+        })
+
+    Vote.objects.create(
+        user=request.user,
+        content_type=target_type,
+        object_id=object_id,
+        value=value,
+    )
+    apply_reputation(target.author, target, value)
+    target.vote_count += value
+    target.save(update_fields=['vote_count'])
+
+    if value == 1:
+        if isinstance(target, Question):
+            target_url = target.get_absolute_url()
+        else:
+            target_url = target.question.get_absolute_url()
+
+        create_notification(
+            recipient=target.author,
+            sender=request.user,
+            notification_type='upvote',
+            message=f'{request.user.username} upvoted your {content_type}',
+            url=target_url,
+        )
+
+    return JsonResponse({
+        'vote_count': target.vote_count,
+        'user_vote': value,
+    })

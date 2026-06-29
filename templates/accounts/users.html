@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Users – StackIt{% endblock %}
+{% block content %}
+<main class="main-content">
+  <div class="page-header"><h1>Users</h1></div>
+  <div style="display:flex;gap:12px;margin-bottom:20px;align-items:center;flex-wrap:wrap;">
+    <form method="get" style="display:flex;gap:8px;flex:1;max-width:360px;">
+      <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Search users…" style="flex:1;">
+      <button type="submit" class="btn btn-ghost">Search</button>
+    </form>
+    <div class="filter-tabs" style="margin-bottom:0;">
+      <a href="?sort=reputation{% if search %}&q={{ search }}{% endif %}" class="filter-tab {% if sort == 'reputation' %}active{% endif %}">Reputation</a>
+      <a href="?sort=newest{% if search %}&q={{ search }}{% endif %}" class="filter-tab {% if sort == 'newest' %}active{% endif %}">Newest</a>
+      <a href="?sort=name{% if search %}&q={{ search }}{% endif %}" class="filter-tab {% if sort == 'name' %}active{% endif %}">Name</a>
+    </div>
+  </div>
+  {% if page.object_list %}
+  <div class="users-grid">
+    {% for user in page.object_list %}
+    <a href="{% url 'profile' user.username %}" class="user-card">
+      <img src="{% if user.profile.avatar %}{{ user.profile.get_avatar_url }}{% else %}/static/images/default_avatar.svg{% endif %}" alt="{{ user.username }}">
+      <div class="username">{{ user.username }}</div>
+      <div class="reputation">{{ user.profile.reputation }} reputation</div>
+      <div class="badge-count">{{ user.profile.badges_count }} badge{{ user.profile.badges_count|pluralize }}</div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><div class="empty-icon">👥</div><h3>No users found</h3></div>
+  {% endif %}
+</main>
+<aside class="right-sidebar"></aside>
+{% endblock %}

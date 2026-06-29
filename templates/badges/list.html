@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Badges – StackIt{% endblock %}
+{% block content %}
+<main class="main-content">
+  <div class="page-header"><h1>Badges</h1></div>
+  <p class="text-muted text-sm" style="margin-bottom:20px;">Badges are awarded for being a good member of the StackIt community.</p>
+  {% regroup badges by tier as tier_list %}
+  {% for tier in tier_list %}
+  <h2 style="font-size:16px;font-weight:600;margin:20px 0 12px;text-transform:capitalize;">
+    <span class="badge-dot {{ tier.grouper }}" style="width:14px;height:14px;display:inline-block;"></span>
+    {{ tier.grouper|title }} Badges
+  </h2>
+  <div class="badges-grid">
+    {% for badge in tier.list %}
+    <div class="badge-card">
+      <span class="badge-dot {{ badge.tier }} badge-dot-lg"></span>
+      <div>
+        <div class="badge-name">{{ badge.name }}</div>
+        <div class="badge-desc">{{ badge.description }}</div>
+        <span class="badge-tier-label {{ badge.tier }}">{{ badge.get_tier_display }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</main>
+<aside class="right-sidebar"></aside>
+{% endblock %}

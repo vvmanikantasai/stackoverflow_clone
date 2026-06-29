@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Log In – StackIt{% endblock %}
+{% block content %}
+<main style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px 16px;background:var(--bg-secondary);">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="logo-text">🚀 StackIt</span>
+      <span class="logo-sub">Sign in to your account</span>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Username or Email</label>
+        <input type="text" name="username" class="form-control" placeholder="Username or Email" value="{{ form.username.value|default:'' }}">
+        {% if form.username.errors %}<div class="form-error">{{ form.username.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" placeholder="Password">
+        {% if form.password.errors %}<div class="form-error">{{ form.password.errors.0 }}</div>{% endif %}
+      </div>
+      <div style="display:flex;align-items:center;margin-bottom:16px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+          <input type="checkbox" name="remember_me"> Remember me
+        </label>
+      </div>
+      {% if form.non_field_errors %}
+        <div class="message error" style="margin-bottom:12px;">{{ form.non_field_errors.0 }}</div>
+      {% endif %}
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Log In</button>
+    </form>
+    <div class="auth-footer">Don't have an account? <a href="{% url 'register' %}">Sign up</a></div>
+  </div>
+</main>
+<div></div>
+{% endblock %}

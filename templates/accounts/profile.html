@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load humanize markdown_extras %}
+{% block title %}{{ profile_user.username }} – StackIt{% endblock %}
+{% block content %}
+<main class="main-content">
+  <div class="profile-header">
+    <img class="profile-avatar" src="{% if profile.avatar %}{{ profile.get_avatar_url }}{% else %}/static/images/default_avatar.svg{% endif %}" alt="{{ profile_user.username }}">
+    <div class="profile-info" style="flex:1;">
+      <h1>{{ profile_user.username }}</h1>
+      {% if profile_user.first_name or profile_user.last_name %}
+        <div style="font-size:15px;color:var(--text-secondary);margin-bottom:4px;">{{ profile_user.get_full_name }}</div>
+      {% endif %}
+      <div class="profile-meta">
+        <span>📅 Joined {{ profile.joined_date|date:"M Y" }}</span>
+        {% if profile.location %}<span>📍 {{ profile.location }}</span>{% endif %}
+        {% if profile.website %}<span><a href="{{ profile.website }}" target="_blank" rel="noopener">🌐 Website</a></span>{% endif %}
+      </div>
+      {% if profile.bio %}<p class="profile-bio">{{ profile.bio }}</p>{% endif %}
+    </div>
+    {% if request.user == profile_user %}
+    <a href="{% url 'edit_profile' %}" class="btn btn-ghost">Edit Profile</a>
+    {% elif request.user.is_authenticated %}
+    <form method="post" action="{% url 'toggle_follow' profile_user.username %}">
+      {% csrf_token %}
+      <button type="submit" class="btn {% if is_following %}btn-ghost{% else %}btn-primary{% endif %}">
+        {% if is_following %}Following{% else %}Follow{% endif %}
+      </button>
+    </form>
+    {% endif %}
+  </div>
+
+  <div class="profile-stats">
+    <div class="profile-stat">
+      <div class="stat-value">{{ profile.reputation|intcomma }}</div>
+      <div class="stat-label">Reputation</div>
+    </div>
+    <div class="profile-stat">
+      <div class="stat-value">{{ profile.questions_count }}</div>
+      <div class="stat-label">Questions</div>
+    </div>
+    <div class="profile-stat">
+      <div class="stat-value">{{ profile.answers_count }}</div>
+      <div class="stat-label">Answers</div>
+    </div>
+    <div class="profile-stat">
+      <div class="stat-value">{{ profile.badges_count }}</div>
+      <div class="stat-label">Badges</div>
+    </div>
+    <a href="{% url 'followers' profile_user.username %}" class="profile-stat">
+      <div class="stat-value">{{ follower_count }}</div>
+      <div class="stat-label">Followers</div>
+    </a>
+    <a href="{% url 'following' profile_user.username %}" class="profile-stat">
+      <div class="stat-value">{{ following_count }}</div>
+      <div class="stat-label">Following</div>
+    </a>
+  </div>
+
+  {% if user_badges %}
+  <div style="margin-bottom:24px;">
+    <h3 style="font-size:15px;font-weight:600;margin-bottom:10px;">Badges</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      {% for ub in user_badges %}
+      <div class="so-badge-pill">
+        <span class="badge-dot {{ ub.badge.tier }}"></span>
+        <span>{{ ub.badge.name }}</span>
+        <span class="badge-tier-name">{{ ub.badge.tier|title }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <h3 style="font-size:15px;font-weight:600;margin-bottom:12px;">Recent Questions</h3>
+  {% if questions %}
+    <div class="question-list" style="margin-bottom:24px;">
+      {% for q in questions %}
+      <div class="question-card">
+        <div class="question-stats">
+          <div class="stat-item"><span class="stat-number">{{ q.vote_count }}</span><span>votes</span></div>
+          <div class="stat-item {% if q.answer_count > 0 %}has-answers{% endif %}"><span class="stat-number">{{ q.answer_count }}</span><span>ans</span></div>
+        </div>
+        <div class="question-body">
+          <div class="question-title"><a href="{{ q.get_absolute_url }}">{{ q.title }}</a></div>
+          <div class="question-meta">
+            <div class="tags-list">{% for tag in q.tags.all %}<a href="{% url 'tag_detail' tag.slug %}" class="tag">{{ tag.name }}</a>{% endfor %}</div>
+            <div class="author-info">{{ q.created_at|naturaltime }}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted text-sm" style="margin-bottom:24px;">No questions asked yet.</p>
+  {% endif %}
+
+  <h3 style="font-size:15px;font-weight:600;margin-bottom:12px;">Recent Answers</h3>
+  {% if answers %}
+    {% for a in answers %}
+    <div style="padding:12px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;">
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px;">
+        Answered on <a href="{{ a.question.get_absolute_url }}">{{ a.question.title|truncatechars:60 }}</a>
+        {% if a.is_accepted %}<span style="color:var(--green);font-weight:600;"> ✓ Accepted</span>{% endif %}
+      </div>
+      <div style="font-size:13px;color:var(--text-secondary);">{{ a.content|render_markdown|striptags|truncatechars:120 }}</div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <p class="text-muted text-sm">No answers yet.</p>
+  {% endif %}
+</main>
+
+<aside class="right-sidebar">
+  {% if rep_history %}
+  <div class="sidebar-widget">
+    <div class="widget-header">📊 Reputation History</div>
+    <div class="widget-body">
+      {% for rh in rep_history %}
+      <div class="widget-item">
+        <span style="color:{% if rh.points > 0 %}var(--green){% else %}var(--red){% endif %};font-weight:600;">{{ rh.points|stringformat:"+d" }}</span>
+        <span style="flex:1;font-size:12px;color:var(--text-muted);">{{ rh.description|truncatechars:40 }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</aside>
+{% endblock %}

@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+{% load humanize markdown_extras %}
+{% block title %}{{ question.title }} - Stack Overflow{% endblock %}
+{% block meta_desc %}{{ question.content|render_markdown|striptags|truncatechars:160 }}{% endblock %}
+
+{% block content %}
+<main class="main-content">
+  <!-- Question Header -->
+  <div class="question-detail-header">
+    <h1 class="question-detail-title">{{ question.title }}</h1>
+    <div class="question-detail-meta">
+      <span>Asked <strong>{{ question.created_at|naturaltime }}</strong></span>
+      <span>Modified <strong>{{ question.updated_at|date:"M d, Y" }}</strong></span>
+      <span>Viewed <strong>{{ question.view_count|intcomma }} time{{ question.view_count|pluralize }}</strong></span>
+    </div>
+  </div>
+
+  <!-- Question Post -->
+  <div class="post-layout">
+    <div class="vote-cell">
+      {% if request.user.is_authenticated %}
+        <button class="vote-btn {% if user_question_vote == 1 %}voted-up{% endif %}"
+                data-type="question" data-id="{{ question.pk }}" data-value="1"
+                title="This question shows research effort; it is useful and clear">▲</button>
+      {% else %}
+        <a href="{% url 'login' %}?next={{ request.path }}" class="vote-btn" title="Log in to vote">▲</a>
+      {% endif %}
+
+      <span class="vote-count-display" id="q-vote-count">{{ question.vote_count }}</span>
+
+      {% if request.user.is_authenticated %}
+        <button class="vote-btn {% if user_question_vote == -1 %}voted-down{% endif %}"
+                data-type="question" data-id="{{ question.pk }}" data-value="-1"
+                title="This question does not show any research effort; it is unclear or not useful">▼</button>
+      {% else %}
+        <a href="{% url 'login' %}?next={{ request.path }}" class="vote-btn" title="Log in to vote">▼</a>
+      {% endif %}
+    </div>
+
+    <div class="post-content">
+      <div class="post-body">{{ question.content|render_markdown }}</div>
+
+      <!-- Images -->
+      {% if question.images.all %}
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+        {% for img in question.images.all %}
+          <a href="{{ img.image.url }}" target="_blank">
+            <img src="{{ img.image.url }}" style="max-width:200px;max-height:150px;object-fit:cover;border-radius:4px;border:1px solid var(--border);" alt="Question image">
+          </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Tags -->
+      <div class="tags-list" style="margin-bottom:16px;">
+        {% for tag in question.tags.all %}
+          <a href="{% url 'tag_detail' tag.slug %}" class="tag">{{ tag.name }}</a>
+        {% endfor %}
+      </div>
+
+      <div class="post-footer">
+        <div class="post-actions">
+          {% if request.user.is_authenticated %}
+            <a href="{% url 'ask_question' %}?share={{ question.slug }}" class="action-link">Share</a>
+            <button class="action-link save-question-btn bookmark-btn {% if is_bookmarked %}active{% endif %}"
+                    data-id="{{ question.pk }}"
+                    title="{% if is_bookmarked %}Remove from saved questions{% else %}Save this question{% endif %}">
+              <span class="material-symbols-outlined">bookmark</span>
+              <span class="bookmark-label">{% if is_bookmarked %}Saved{% else %}Save{% endif %}</span>
+            </button>
+            {% if request.user == question.author or request.user.is_staff %}
+              <a href="{% url 'edit_question' question.slug %}" class="action-link">Edit</a>
+              <a href="{% url 'delete_question' question.slug %}" class="action-link danger" data-confirm="Delete this question permanently?">Delete</a>
+            {% endif %}
+            <a href="{% url 'report' 'question' question.pk %}" class="action-link">Report</a>
+          {% else %}
+            <a href="{% url 'login' %}?next={{ request.path }}" class="action-link">
+              <span class="material-symbols-outlined">bookmark</span> Save
+            </a>
+          {% endif %}
+        </div>
+        <div class="post-author-card">
+          <div class="posted-label">asked {{ question.created_at|date:"M d, Y 'at' H:i" }}</div>
+          <div class="author-row">
+            <img src="{% if question.author.profile.avatar %}{{ question.author.profile.get_avatar_url }}{% else %}/static/images/default_avatar.svg{% endif %}" alt="{{ question.author.username }}">
+            <div>
+              <a href="{% url 'profile' question.author.username %}" class="author-name">{{ question.author.username }}</a>
+              <div class="author-rep">{{ question.author.profile.reputation }} rep</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question Comments -->
+      <div class="comments-section">
+        <div class="comment-list">
+          {% include 'comments/thread.html' with comments=q_comments content_type='question' object_id=question.pk depth=0 %}
+        </div>
+        {% if request.user.is_authenticated %}
+        <button class="comment-form-toggle" data-target="q-comment-form-{{ question.pk }}">Add a comment</button>
+        <div class="comment-form" id="q-comment-form-{{ question.pk }}">
+          <form method="post" action="{% url 'add_comment' 'question' question.pk %}">
+            {% csrf_token %}
+            <div class="comment-form-inner">
+              <textarea name="content" maxlength="500" placeholder="Add a comment… (5–500 characters)" rows="2"></textarea>
+              <button type="submit" class="btn btn-secondary btn-sm">Add Comment</button>
+            </div>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ANSWERS SECTION -->
+  <h2 class="answers-header">{{ answer_count }} Answer{{ answer_count|pluralize }}</h2>
+
+  {% for item in answers_with_comments %}
+  {% with answer=item.answer %}
+  <div class="answer-block {% if answer.is_accepted %}accepted-answer{% endif %}" id="answer-{{ answer.pk }}">
+    {% if answer.is_accepted %}
+    <div class="accepted-badge">✓ Accepted Answer</div>
+    {% endif %}
+
+    <div class="post-layout">
+      <div class="vote-cell">
+        {% if request.user.is_authenticated %}
+          <button class="vote-btn {% if item.user_vote == 1 %}voted-up{% endif %}"
+                  data-type="answer" data-id="{{ answer.pk }}" data-value="1"
+                  title="This answer is useful">▲</button>
+        {% else %}
+          <a href="{% url 'login' %}?next={{ request.path }}" class="vote-btn">▲</a>
+        {% endif %}
+
+        <span class="vote-count-display">{{ answer.vote_count }}</span>
+
+        {% if request.user.is_authenticated %}
+          <button class="vote-btn {% if item.user_vote == -1 %}voted-down{% endif %}"
+                  data-type="answer" data-id="{{ answer.pk }}" data-value="-1"
+                  title="This answer is not useful">▼</button>
+        {% else %}
+          <a href="{% url 'login' %}?next={{ request.path }}" class="vote-btn">▼</a>
+        {% endif %}
+
+        {% if request.user == question.author %}
+        <form method="post" action="{% url 'accept_answer' answer.pk %}" class="accept-answer-form" style="margin:0;">
+          {% csrf_token %}
+          <button type="submit" class="accept-btn {% if answer.is_accepted %}accepted{% endif %}"
+                  title="{% if answer.is_accepted %}Accepted answer{% else %}Mark as accepted{% endif %}">✓</button>
+        </form>
+        {% elif answer.is_accepted %}
+          <span class="accept-btn accepted" title="Accepted answer" style="cursor:default;">✓</span>
+        {% endif %}
+      </div>
+
+      <div class="post-content">
+        <div class="post-body">{{ answer.content|render_markdown }}</div>
+
+        <div class="post-footer">
+          <div class="post-actions">
+            {% if request.user.is_authenticated %}
+              <span class="action-link" style="cursor:default;">Share</span>
+              {% if request.user == answer.author or request.user.is_staff %}
+                <a href="{% url 'edit_answer' answer.pk %}" class="action-link">Edit</a>
+                <form method="post" action="{% url 'delete_answer' answer.pk %}" class="inline-action-form">
+                  {% csrf_token %}
+                  <button type="submit" class="action-link danger" data-confirm="Delete this answer?">Delete</button>
+                </form>
+              {% endif %}
+              <a href="{% url 'report' 'answer' answer.pk %}" class="action-link">Report</a>
+            {% endif %}
+          </div>
+          <div class="post-author-card" style="background:var(--green-bg);border-color:rgba(46,125,50,0.3);">
+            <div class="posted-label">answered {{ answer.created_at|date:"M d, Y 'at' H:i" }}</div>
+            <div class="author-row">
+              <img src="{% if answer.author.profile.avatar %}{{ answer.author.profile.get_avatar_url }}{% else %}/static/images/default_avatar.svg{% endif %}" alt="{{ answer.author.username }}">
+              <div>
+                <a href="{% url 'profile' answer.author.username %}" class="author-name">{{ answer.author.username }}</a>
+                <div class="author-rep">{{ answer.author.profile.reputation }} rep</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Answer Comments -->
+        <div class="comments-section">
+          <div class="comment-list">
+            {% include 'comments/thread.html' with comments=item.comments content_type='answer' object_id=answer.pk depth=0 %}
+          </div>
+          {% if request.user.is_authenticated %}
+          <button class="comment-form-toggle" data-target="a-comment-form-{{ answer.pk }}">Add a comment</button>
+          <div class="comment-form" id="a-comment-form-{{ answer.pk }}">
+            <form method="post" action="{% url 'add_comment' 'answer' answer.pk %}">
+              {% csrf_token %}
+              <div class="comment-form-inner">
+                <textarea name="content" maxlength="500" placeholder="Add a comment… (5–500 characters)" rows="2"></textarea>
+                <button type="submit" class="btn btn-secondary btn-sm">Add Comment</button>
+              </div>
+            </form>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endwith %}
+  {% empty %}
+  <div style="padding:24px 0;color:var(--text-muted);text-align:center;">
+    <p>No answers yet. Be the first to answer!</p>
+  </div>
+  {% endfor %}
+
+  <!-- POST ANSWER -->
+  {% if request.user.is_authenticated %}
+  <div style="margin-top:32px;">
+    <h2 style="font-size:18px;font-weight:500;margin-bottom:16px;">Your Answer</h2>
+    <form method="post" action="{% url 'post_answer' question.pk %}">
+      {% csrf_token %}
+      <div class="editor-wrap">
+        <div class="editor-toolbar">
+          <button type="button" class="editor-btn" data-action="bold" data-target="answer-editor" title="Bold"><b>B</b></button>
+          <button type="button" class="editor-btn" data-action="italic" data-target="answer-editor" title="Italic"><i>I</i></button>
+          <button type="button" class="editor-btn" data-action="strikethrough" data-target="answer-editor" title="Strikethrough"><s>S</s></button>
+          <div class="editor-sep"></div>
+          <button type="button" class="editor-btn" data-action="heading" data-target="answer-editor" title="Heading">H</button>
+          <button type="button" class="editor-btn" data-action="link" data-target="answer-editor" title="Link">🔗</button>
+          <button type="button" class="editor-btn" data-action="blockquote" data-target="answer-editor" title="Blockquote">"</button>
+          <div class="editor-sep"></div>
+          <button type="button" class="editor-btn" data-action="code" data-target="answer-editor" title="Inline code">`</button>
+          <button type="button" class="editor-btn" data-action="code-block" data-target="answer-editor" title="Code block">{ }</button>
+          <div class="editor-sep"></div>
+          <button type="button" class="editor-btn" data-action="ul" data-target="answer-editor" title="Unordered list">• List</button>
+          <button type="button" class="editor-btn" data-action="ol" data-target="answer-editor" title="Ordered list">1. List</button>
+          <button type="button" class="editor-btn" data-action="hr" data-target="answer-editor" title="Horizontal rule">—</button>
+        </div>
+        <textarea name="content" id="answer-editor" class="form-control" rows="10"
+                  placeholder="Write your answer here. Be detailed and helpful.&#10;&#10;You can use Markdown formatting."></textarea>
+        <div class="preview-toggle-bar">
+          <button type="button" class="preview-tab-btn active" data-mode="write" data-target="answer-editor" data-preview="answer-preview">Write</button>
+          <button type="button" class="preview-tab-btn" data-mode="preview" data-target="answer-editor" data-preview="answer-preview">Preview</button>
+        </div>
+        <div class="md-preview post-body" id="answer-preview"></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:10px;align-items:center;">
+        <button type="submit" class="btn btn-primary">Post Your Answer</button>
+        <span class="text-muted text-sm">Be sure your answer adds value to the discussion.</span>
+      </div>
+    </form>
+  </div>
+  {% else %}
+  <div style="margin-top:32px;padding:20px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius);text-align:center;">
+    <p style="margin-bottom:12px;color:var(--text-secondary);">You must be logged in to answer questions.</p>
+    <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary">Log In to Answer</a>
+    <span style="margin:0 8px;color:var(--text-muted);">or</span>
+    <a href="{% url 'register' %}" class="btn btn-secondary">Sign Up</a>
+  </div>
+  {% endif %}
+</main>
+
+<!-- RIGHT SIDEBAR -->
+<aside class="right-sidebar">
+  {% if related_questions %}
+  <div class="sidebar-widget">
+    <div class="widget-header">Related Questions</div>
+    <div class="widget-body">
+      {% for rq in related_questions %}
+      <div class="widget-item">
+        <a href="{{ rq.get_absolute_url }}">{{ rq.title|truncatechars:55 }}</a>
+        <span class="count">{{ rq.vote_count }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="sidebar-widget">
+    <div class="widget-header">Tags</div>
+    <div class="widget-body">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;padding:4px;">
+        {% for tag in question.tags.all %}
+          <a href="{% url 'tag_detail' tag.slug %}" class="tag">{{ tag.name }}</a>
+        {% empty %}
+          <span class="text-muted text-sm">No tags</span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</aside>
+{% endblock %}

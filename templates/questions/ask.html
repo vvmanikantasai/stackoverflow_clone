@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Ask a Question – StackIt{% endblock %}
+
+{% block content %}
+<main class="main-content ask-page">
+  <div class="page-header">
+    <h1>Ask a Public Question</h1>
+  </div>
+
+  <div class="ask-tips">
+    <h3>📝 Writing a good question</h3>
+    <ul>
+      <li>Summarize your problem in a one-line title (min 15 characters)</li>
+      <li>Describe what you tried and what happened</li>
+      <li>Include error messages or unexpected output</li>
+      <li>Add relevant code snippets using the code block tool</li>
+      <li>Use tags to categorize your question (max 5 tags)</li>
+    </ul>
+  </div>
+
+  <div class="form-card">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label" for="id_title">Title <span class="required">*</span></label>
+        <p class="form-help">Be specific and imagine you're asking a question to another person.</p>
+        {{ form.title }}
+        {% if form.title.errors %}<div class="form-error">{{ form.title.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="question-editor">Description <span class="required">*</span></label>
+        <p class="form-help">Include all the information someone would need to answer your question. Min 30 characters.</p>
+        <div class="editor-wrap">
+          <div class="editor-toolbar">
+            <button type="button" class="editor-btn" data-action="bold" data-target="question-editor" title="Bold"><b>B</b></button>
+            <button type="button" class="editor-btn" data-action="italic" data-target="question-editor" title="Italic"><i>I</i></button>
+            <button type="button" class="editor-btn" data-action="strikethrough" data-target="question-editor" title="Strikethrough"><s>S</s></button>
+            <div class="editor-sep"></div>
+            <button type="button" class="editor-btn" data-action="heading" data-target="question-editor" title="Heading">H</button>
+            <button type="button" class="editor-btn" data-action="link" data-target="question-editor" title="Link">🔗</button>
+            <button type="button" class="editor-btn" data-action="blockquote" data-target="question-editor" title="Blockquote">"</button>
+            <div class="editor-sep"></div>
+            <button type="button" class="editor-btn" data-action="code" data-target="question-editor" title="Inline code">`</button>
+            <button type="button" class="editor-btn" data-action="code-block" data-target="question-editor" title="Code block">{ }</button>
+            <div class="editor-sep"></div>
+            <button type="button" class="editor-btn" data-action="ul" data-target="question-editor" title="Unordered list">• List</button>
+            <button type="button" class="editor-btn" data-action="ol" data-target="question-editor" title="Ordered list">1. List</button>
+            <button type="button" class="editor-btn" data-action="hr" data-target="question-editor" title="Horizontal rule">—</button>
+          </div>
+          <textarea name="content" id="question-editor" class="form-control" rows="12"
+                    placeholder="Describe your problem in detail…">{{ form.content.value|default:'' }}</textarea>
+          <div class="preview-toggle-bar">
+            <button type="button" class="preview-tab-btn active" data-mode="write" data-target="question-editor" data-preview="question-preview">Write</button>
+            <button type="button" class="preview-tab-btn" data-mode="preview" data-target="question-editor" data-preview="question-preview">Preview</button>
+          </div>
+          <div class="md-preview post-body" id="question-preview"></div>
+        </div>
+        {% if form.content.errors %}<div class="form-error">{{ form.content.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="id_tags_input">Tags</label>
+        <p class="form-help">Add up to 5 tags separated by spaces to describe what your question is about (e.g. <code>python django rest-api</code>).</p>
+        <div class="tag-input-container">
+          {{ form.tags_input }}
+        </div>
+        {% if form.tags_input.errors %}<div class="form-error">{{ form.tags_input.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="id_images">Images (optional)</label>
+        <p class="form-help">Upload screenshots or diagrams to help explain your problem.</p>
+        <input type="file" name="images" id="id_images" accept="image/*" multiple class="form-control" style="padding:6px;">
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Post Your Question</button>
+        <a href="{% url 'home' %}" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</main>
+
+<aside class="right-sidebar">
+  <div class="sidebar-widget">
+    <div class="widget-header">🎯 How to ask</div>
+    <div class="widget-body" style="padding:16px;font-size:13px;color:var(--text-secondary);line-height:1.6;">
+      <p><strong>Before posting</strong>, search to see if your question has already been answered.</p>
+      <hr class="divider">
+      <p><strong>Title</strong> — Pretend you're talking to a busy colleague and say it in one sentence.</p>
+      <hr class="divider">
+      <p><strong>Body</strong> — What steps will reproduce your problem? What have you already tried?</p>
+      <hr class="divider">
+      <p><strong>Tags</strong> — Pick at most 5 tags that describe what your question is about.</p>
+    </div>
+  </div>
+</aside>
+{% endblock %}

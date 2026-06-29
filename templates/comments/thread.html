@@ -1,0 +1,60 @@
+{% for comment in comments %}
+<div class="comment-item nested-comment depth-{{ depth|default:0 }}" id="comment-{{ comment.pk }}" data-comment-id="{{ comment.pk }}">
+  <div class="comment-vote-box">
+    {% if request.user.is_authenticated %}
+      <button class="comment-vote-btn {% if comment.user_vote == 1 %}active{% endif %}" data-url="{% url 'vote_comment' comment.pk 1 %}" title="Upvote comment">▲</button>
+    {% endif %}
+    <span class="comment-vote-count">{{ comment.vote_count }}</span>
+    {% if request.user.is_authenticated %}
+      <button class="comment-vote-btn {% if comment.user_vote == -1 %}active{% endif %}" data-url="{% url 'vote_comment' comment.pk -1 %}" title="Downvote comment">▼</button>
+    {% endif %}
+  </div>
+
+  <div class="comment-main">
+    <div class="comment-display">
+      <span class="comment-content">
+        <a href="{% url 'profile' comment.author.username %}" class="comment-author">{{ comment.author.username }}</a>
+        <span class="comment-sep"> - </span>
+        <span class="comment-text">{{ comment.content }}</span>
+      </span>
+      <span class="comment-date">{{ comment.created_at|date:"M d" }}</span>
+    </div>
+
+    <form class="comment-edit-form" method="post" action="{% url 'edit_comment' comment.pk %}">
+      {% csrf_token %}
+      <textarea name="content" maxlength="500" rows="2">{{ comment.content }}</textarea>
+      <div class="comment-form-actions">
+        <button type="submit" class="btn btn-secondary btn-sm">Save</button>
+        <button type="button" class="action-link comment-cancel-edit">Cancel</button>
+      </div>
+    </form>
+
+    {% if request.user.is_authenticated %}
+    <div class="comment-actions">
+      <button class="action-link comment-form-toggle" data-target="reply-form-{{ comment.pk }}">Reply</button>
+      {% if request.user == comment.author or request.user.is_staff %}
+        <button class="action-link comment-edit-toggle">Edit</button>
+        <button class="action-link danger comment-delete-btn" data-url="{% url 'delete_comment' comment.pk %}">Delete</button>
+      {% endif %}
+    </div>
+
+    <div class="comment-form reply-form" id="reply-form-{{ comment.pk }}">
+      <form method="post" action="{% url 'add_comment' content_type object_id %}">
+        {% csrf_token %}
+        <input type="hidden" name="parent_id" value="{{ comment.pk }}">
+        <div class="comment-form-inner">
+          <textarea name="content" maxlength="500" placeholder="Reply to {{ comment.author.username }}..." rows="2"></textarea>
+          <button type="submit" class="btn btn-secondary btn-sm">Reply</button>
+        </div>
+      </form>
+    </div>
+    {% endif %}
+
+    {% if comment.child_comments %}
+      <div class="comment-replies">
+        {% include 'comments/thread.html' with comments=comment.child_comments content_type=content_type object_id=object_id depth=depth|add:1 %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endfor %}

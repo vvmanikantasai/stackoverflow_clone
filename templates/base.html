@@ -1,0 +1,147 @@
+{% load static %}{% load humanize %}<!DOCTYPE html>
+<html lang="en" {% if request.user.is_authenticated and request.user.profile.dark_mode %}data-theme="dark"{% endif %}>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Stack Overflow - Where Developers Learn, Share, & Build Careers{% endblock %}</title>
+  <meta name="description" content="{% block meta_desc %}StackIt is a community-driven Q&A platform for developers.{% endblock %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=responsive-20260629-1">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+  {% block extra_head %}{% endblock %}
+</head>
+<body data-dark-mode="{% if request.user.is_authenticated and request.user.profile.dark_mode %}true{% else %}false{% endif %}">
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="topbar-inner">
+    <a href="{% url 'home' %}" class="navbar-logo" aria-label="Stack Overflow">
+      <span class="so-mark" aria-hidden="true"><span></span></span>
+      <span class="logo-wordmark">Stack Overflow</span>
+    </a>
+
+    <div class="navbar-search" id="site-search">
+      <form action="{% url 'search' %}" method="get">
+        <input type="text" name="q" placeholder="Search..." value="{{ request.GET.q|default:'' }}" autocomplete="off">
+        <button type="submit" aria-label="Search"><span class="material-symbols-outlined">search</span></button>
+      </form>
+    </div>
+
+    <div class="navbar-actions">
+      <button
+        id="mobile-search-toggle"
+        class="topbar-icon mobile-search-toggle"
+        type="button"
+        aria-label="Open search"
+        aria-controls="site-search"
+        aria-expanded="false"
+        title="Search"
+      >
+        <span class="material-symbols-outlined">search</span>
+      </button>
+      {% if request.user.is_authenticated %}
+        <a href="{% url 'ask_question' %}" class="btn btn-primary">Ask Question</a>
+        <a href="{% url 'notifications' %}" class="topbar-icon" title="Notifications"><span class="material-symbols-outlined">inbox</span></a>
+        <div class="avatar-menu">
+          <button class="avatar-btn" type="button" aria-label="User menu">
+            <img src="{% if request.user.profile.avatar %}{{ request.user.profile.get_avatar_url }}{% else %}{% static 'images/default_avatar.svg' %}{% endif %}" alt="{{ request.user.username }}">
+          </button>
+          <div class="avatar-dropdown">
+            <div class="dropdown-header">
+              <div class="username">{{ request.user.username }}</div>
+              <div class="rep">{{ request.user.profile.reputation }} reputation</div>
+            </div>
+            <a href="{% url 'profile' request.user.username %}" class="dropdown-item"><span class="material-symbols-outlined">person</span> My Profile</a>
+            <a href="{% url 'saved_questions' %}" class="dropdown-item"><span class="material-symbols-outlined">bookmark</span> Saved Questions</a>
+            <a href="{% url 'notifications' %}" class="dropdown-item"><span class="material-symbols-outlined">notifications</span> Notifications {% if unread_notifications > 0 %}<span class="notif-badge" style="position:static;margin-left:auto;">{{ unread_notifications }}</span>{% endif %}</a>
+            <hr class="dropdown-divider">
+            <a href="{% url 'edit_profile' %}" class="dropdown-item"><span class="material-symbols-outlined">settings</span> Edit Profile</a>
+            <a href="{% url 'toggle_dark_mode' %}" class="dropdown-item"><span class="material-symbols-outlined">{% if request.user.profile.dark_mode %}light_mode{% else %}dark_mode{% endif %}</span> {% if request.user.profile.dark_mode %}Light Mode{% else %}Dark Mode{% endif %}</a>
+            <hr class="dropdown-divider">
+            {% if request.user.is_staff %}
+              <a href="{% url 'admin:index' %}" class="dropdown-item"><span class="material-symbols-outlined">admin_panel_settings</span> Admin Panel</a>
+              <hr class="dropdown-divider">
+            {% endif %}
+            <form method="post" action="{% url 'logout' %}" style="margin:0;">
+              {% csrf_token %}
+              <button type="submit" class="dropdown-item danger"><span class="material-symbols-outlined">logout</span> Sign Out</button>
+            </form>
+          </div>
+        </div>
+      {% else %}
+        <a href="{% url 'login' %}" class="btn btn-ghost">Log in</a>
+        <a href="{% url 'register' %}" class="btn btn-primary">Sign up</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<!-- MESSAGES -->
+{% if messages %}
+<div class="messages-container" style="position:fixed;top:58px;left:50%;transform:translateX(-50%);z-index:900;width:100%;max-width:600px;padding:0 16px;">
+  {% for message in messages %}
+    <div class="message {{ message.tags }}">
+      {% if message.tags == 'success' %}✓{% elif message.tags == 'error' %}✕{% elif message.tags == 'warning' %}⚠{% else %}ℹ{% endif %}
+      {{ message }}
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="page-wrapper">
+  <!-- LEFT SIDEBAR -->
+  <aside class="left-sidebar">
+    <ul class="sidebar-nav">
+      <li>
+        <a href="{% url 'home' %}" class="sidebar-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+          <span class="sidebar-icon material-symbols-outlined">home</span> Home
+        </a>
+      </li>
+      <li class="sidebar-section-title">Public</li>
+      <li>
+        <a href="{% url 'home' %}" class="sidebar-link {% if request.resolver_match.url_name == 'home' and not request.GET.filter %}active{% endif %}">
+          <span class="sidebar-icon material-symbols-outlined">forum</span> Questions
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'tags' %}" class="sidebar-link {% if request.resolver_match.url_name == 'tags' %}active{% endif %}">
+          <span class="sidebar-icon material-symbols-outlined">sell</span> Tags
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'users' %}" class="sidebar-link {% if request.resolver_match.url_name == 'users' %}active{% endif %}">
+          <span class="sidebar-icon material-symbols-outlined">groups</span> Users
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'badges' %}" class="sidebar-link {% if request.resolver_match.url_name == 'badges' %}active{% endif %}">
+          <span class="sidebar-icon material-symbols-outlined">workspace_premium</span> Badges
+        </a>
+      </li>
+      {% if request.user.is_authenticated %}
+        <li class="sidebar-section-title">Me</li>
+        <li>
+          <a href="{% url 'saved_questions' %}" class="sidebar-link {% if request.resolver_match.url_name == 'saved_questions' %}active{% endif %}">
+            <span class="sidebar-icon material-symbols-outlined">bookmark</span> Saved
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'notifications' %}" class="sidebar-link {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}">
+            <span class="sidebar-icon material-symbols-outlined">notifications</span> Notifications
+            {% if unread_notifications > 0 %}<span class="notif-badge" style="position:static;margin-left:auto;">{{ unread_notifications }}</span>{% endif %}
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </aside>
+
+  <!-- MAIN -->
+  {% block content %}{% endblock %}
+</div>
+
+<script src="{% static 'js/main.js' %}?v=beginner-cleanup-20260628-1"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

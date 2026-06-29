@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Report Content – StackIt{% endblock %}
+{% block content %}
+<main class="main-content">
+  <div class="form-card" style="max-width:480px;margin:0 auto;">
+    <h1 style="margin-bottom:16px;">Report Content</h1>
+    <p class="text-muted text-sm" style="margin-bottom:20px;">Please tell us why you're reporting this content. Our moderation team will review it.</p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Reason</label>
+        <div class="reason-options">
+          <label class="reason-option"><input type="radio" name="reason" value="spam" required> 🚫 Spam</label>
+          <label class="reason-option"><input type="radio" name="reason" value="abuse"> 😡 Abuse / Harassment</label>
+          <label class="reason-option"><input type="radio" name="reason" value="duplicate"> 🔁 Duplicate</label>
+          <label class="reason-option"><input type="radio" name="reason" value="off_topic"> 🔀 Off Topic</label>
+          <label class="reason-option"><input type="radio" name="reason" value="other"> ❓ Other</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Additional Details (optional)</label>
+        <textarea name="description" class="form-control" rows="3" placeholder="Describe the issue…"></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-danger">Submit Report</button>
+        <a href="javascript:history.back()" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</main>
+<aside class="right-sidebar"></aside>
+{% endblock %}
