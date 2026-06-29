@@ -24,6 +24,7 @@ def user_qualifies_for_badge(
 
 
 def check_and_award_badges(user):
+    awarded = []
     badge_names = [
         'First Question',
         'First Answer',
@@ -41,13 +42,6 @@ def check_and_award_badges(user):
         if not badge:
             continue
 
-        already_awarded = UserBadge.objects.filter(
-            user=user,
-            badge=badge,
-        ).exists()
-        if already_awarded:
-            continue
-
         qualifies = user_qualifies_for_badge(
             badge_name,
             question_count,
@@ -57,4 +51,8 @@ def check_and_award_badges(user):
         if not qualifies:
             continue
 
-        UserBadge.objects.create(user=user, badge=badge)
+        _, created = UserBadge.objects.get_or_create(user=user, badge=badge)
+        if created:
+            awarded.append(badge)
+
+    return awarded

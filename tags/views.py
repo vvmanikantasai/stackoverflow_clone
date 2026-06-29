@@ -10,9 +10,17 @@ from .models import Tag
 
 def tags_list_view(request):
     search = request.GET.get('q', '')
-    tags = Tag.objects.annotate(usage=Count('questions')).order_by('-usage')
+    sort_by = request.GET.get('sort', 'popular')
+    tags = Tag.objects.annotate(usage=Count('questions'))
     if search:
         tags = tags.filter(name__icontains=search)
+    if sort_by == 'name':
+        tags = tags.order_by('name')
+    elif sort_by == 'new':
+        tags = tags.order_by('-created_at')
+    else:
+        sort_by = 'popular'
+        tags = tags.order_by('-usage', 'name')
 
     if request.GET.get('format') == 'json':
         return JsonResponse({
@@ -24,7 +32,11 @@ def tags_list_view(request):
 
     paginator = Paginator(tags, 36)
     page = paginator.get_page(request.GET.get('page', 1))
-    return render(request, 'tags/list.html', {'page': page, 'search': search})
+    return render(
+        request,
+        'tags/list.html',
+        {'page': page, 'search': search, 'sort': sort_by},
+    )
 
 
 def tag_detail_view(request, slug):

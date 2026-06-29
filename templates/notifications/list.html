@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Notifications - Stack Overflow{% endblock %}
+{% block content %}
+<main class="main-content notification-page">
+  <div class="page-header">
+    <div>
+      <h1>Notifications</h1>
+      <p class="text-muted">Answers, comments, follows, and achievements involving you.</p>
+    </div>
+    {% if unread_notification_count %}
+    <form method="post" action="{% url 'mark_all_notifications_read' %}">
+      {% csrf_token %}
+      <button class="btn btn-ghost" type="submit">Mark all as read</button>
+    </form>
+    {% endif %}
+  </div>
+
+  <div class="notification-list">
+    {% for notification in notifications %}
+    <a class="notification-item {% if not notification.is_read %}unread{% endif %}"
+       href="{% url 'open_notification' notification.pk %}">
+      <span class="material-symbols-outlined notification-symbol">notifications</span>
+      <span class="notification-copy">
+        <strong>{% if notification.actor %}{{ notification.actor.username }}{% else %}Stack Overflow{% endif %}</strong>
+        {{ notification.message }}
+        <small>{{ notification.created_at|naturaltime }}</small>
+      </span>
+      {% if not notification.is_read %}<span class="unread-dot" aria-label="Unread"></span>{% endif %}
+    </a>
+    {% empty %}
+    <div class="empty-state">
+      <span class="material-symbols-outlined empty-icon">notifications_none</span>
+      <h3>You’re all caught up</h3>
+      <p>Your notifications will appear here.</p>
+    </div>
+    {% endfor %}
+  </div>
+</main>
+<aside class="right-sidebar"></aside>
+{% endblock %}

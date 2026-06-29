@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Edit Profile – StackIt{% endblock %}
+{% block title %}Edit Profile - Stack Overflow{% endblock %}
 {% block content %}
 <main class="main-content form-page">
   <div class="page-header"><h1>Edit Profile</h1></div>
@@ -17,8 +17,15 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">Avatar</label>
+        <label class="form-label">GitHub profile</label>
+        {{ form.github_url }}
+        <div class="form-help">Example: https://github.com/your-username</div>
+        {% if form.github_url.errors %}<div class="form-error">{{ form.github_url.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="{{ form.avatar.id_for_label }}">Profile image</label>
         {{ form.avatar }}
+        <div class="form-help">Upload a clear square image for the best result.</div>
         {% if form.avatar.errors %}<div class="form-error">{{ form.avatar.errors.0 }}</div>{% endif %}
       </div>
       <div class="form-group">

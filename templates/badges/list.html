@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% block title %}Badges – StackIt{% endblock %}
+{% block title %}Badges - Stack Overflow{% endblock %}
 {% block content %}
 <main class="main-content">
   <div class="page-header"><h1>Badges</h1></div>
-  <p class="text-muted text-sm" style="margin-bottom:20px;">Badges are awarded for being a good member of the StackIt community.</p>
+  <p class="text-muted text-sm" style="margin-bottom:20px;">Badges recognize positive contributions to the Stack Overflow community.</p>
   {% regroup badges by tier as tier_list %}
   {% for tier in tier_list %}
   <h2 style="font-size:16px;font-weight:600;margin:20px 0 12px;text-transform:capitalize;">

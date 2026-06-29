@@ -60,8 +60,10 @@
 
       <div class="post-footer">
         <div class="post-actions">
+          <button type="button" class="action-link share-btn"
+                  data-share-path="{{ question.get_absolute_url }}"
+                  data-share-title="{{ question.title }}">Share</button>
           {% if request.user.is_authenticated %}
-            <a href="{% url 'ask_question' %}?share={{ question.slug }}" class="action-link">Share</a>
             <button class="action-link save-question-btn bookmark-btn {% if is_bookmarked %}active{% endif %}"
                     data-id="{{ question.pk }}"
                     title="{% if is_bookmarked %}Remove from saved questions{% else %}Save this question{% endif %}">
@@ -113,15 +115,19 @@
   </div>
 
   <!-- ANSWERS SECTION -->
-  <h2 class="answers-header">{{ answer_count }} Answer{{ answer_count|pluralize }}</h2>
+  <div class="answers-heading-row">
+    <h2 class="answers-header">{{ answer_count }} Answer{{ answer_count|pluralize }}</h2>
+    {% if request.user == question.author and answer_count %}
+      <p class="answers-guidance">
+        Choose the answer that helped most. Its author earns
+        <strong>15 reputation</strong>.
+      </p>
+    {% endif %}
+  </div>
 
   {% for item in answers_with_comments %}
   {% with answer=item.answer %}
   <div class="answer-block {% if answer.is_accepted %}accepted-answer{% endif %}" id="answer-{{ answer.pk }}">
-    {% if answer.is_accepted %}
-    <div class="accepted-badge">✓ Accepted Answer</div>
-    {% endif %}
-
     <div class="post-layout">
       <div class="vote-cell">
         {% if request.user.is_authenticated %}
@@ -142,24 +148,42 @@
           <a href="{% url 'login' %}?next={{ request.path }}" class="vote-btn">▼</a>
         {% endif %}
 
-        {% if request.user == question.author %}
-        <form method="post" action="{% url 'accept_answer' answer.pk %}" class="accept-answer-form" style="margin:0;">
-          {% csrf_token %}
-          <button type="submit" class="accept-btn {% if answer.is_accepted %}accepted{% endif %}"
-                  title="{% if answer.is_accepted %}Accepted answer{% else %}Mark as accepted{% endif %}">✓</button>
-        </form>
-        {% elif answer.is_accepted %}
-          <span class="accept-btn accepted" title="Accepted answer" style="cursor:default;">✓</span>
-        {% endif %}
       </div>
 
       <div class="post-content">
+        {% if answer.is_accepted or request.user == question.author %}
+        <div class="answer-status-row">
+          {% if answer.is_accepted %}
+            <div class="accepted-badge">
+              <span class="accepted-badge-icon" aria-hidden="true">✓</span>
+              <span>
+                <strong>Accepted answer</strong>
+                <small>Selected by the question author</small>
+              </span>
+            </div>
+          {% endif %}
+
+          {% if request.user == question.author and not answer.is_accepted %}
+            <form method="post" action="{% url 'accept_answer' answer.pk %}" class="answer-accept-form">
+              {% csrf_token %}
+              <button type="submit" class="accept-answer-action">
+                <span aria-hidden="true">✓</span>
+                Accept this answer
+                <small>+15 reputation</small>
+              </button>
+            </form>
+          {% endif %}
+        </div>
+        {% endif %}
+
         <div class="post-body">{{ answer.content|render_markdown }}</div>
 
         <div class="post-footer">
           <div class="post-actions">
+            <button type="button" class="action-link share-btn"
+                    data-share-path="{{ question.get_absolute_url }}#answer-{{ answer.pk }}"
+                    data-share-title="Answer to {{ question.title }}">Share</button>
             {% if request.user.is_authenticated %}
-              <span class="action-link" style="cursor:default;">Share</span>
               {% if request.user == answer.author or request.user.is_staff %}
                 <a href="{% url 'edit_answer' answer.pk %}" class="action-link">Edit</a>
                 <form method="post" action="{% url 'delete_answer' answer.pk %}" class="inline-action-form">
@@ -170,7 +194,7 @@
               <a href="{% url 'report' 'answer' answer.pk %}" class="action-link">Report</a>
             {% endif %}
           </div>
-          <div class="post-author-card" style="background:var(--green-bg);border-color:rgba(46,125,50,0.3);">
+          <div class="post-author-card answer-author-card">
             <div class="posted-label">answered {{ answer.created_at|date:"M d, Y 'at' H:i" }}</div>
             <div class="author-row">
               <img src="{% if answer.author.profile.avatar %}{{ answer.author.profile.get_avatar_url }}{% else %}{% static 'images/default_avatar.svg' %}{% endif %}" alt="{{ answer.author.username }}">

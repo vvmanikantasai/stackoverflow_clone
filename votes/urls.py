@@ -1,6 +1,10 @@
-from django.urls import path
+from django.urls import re_path
 from . import views
 
 urlpatterns = [
-    path('<str:content_type>/<int:object_id>/<int:value>/', views.vote_view, name='vote'),
+    re_path(
+        r'^(?P<content_type>question|answer)/(?P<object_id>\d+)/(?P<value>-?1)/$',
+        views.vote_view,
+        name='vote',
+    ),
 ]

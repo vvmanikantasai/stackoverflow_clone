@@ -78,8 +78,14 @@ class ProfileUpdateForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = ['avatar', 'bio', 'website', 'location']
+        fields = ['avatar', 'bio', 'website', 'github_url', 'location']
+        labels = {
+            'avatar': 'Profile image',
+        }
         widgets = {
+            'avatar': forms.ClearableFileInput(
+                attrs={'accept': 'image/*'}
+            ),
             'bio': forms.Textarea(
                 attrs={
                     'class': 'form-control',
@@ -93,10 +99,24 @@ class ProfileUpdateForm(forms.ModelForm):
                     'placeholder': 'https://yourwebsite.com',
                 }
             ),
+            'github_url': forms.URLInput(
+                attrs={
+                    'class': 'form-control',
+                    'placeholder': 'https://github.com/username',
+                }
+            ),
             'location': forms.TextInput(
                 attrs={'class': 'form-control', 'placeholder': 'City, Country'}
             ),
         }
+
+    def clean_github_url(self):
+        github_url = self.cleaned_data.get('github_url', '')
+        if github_url and not github_url.lower().startswith(
+            ('https://github.com/', 'http://github.com/')
+        ):
+            raise forms.ValidationError('Enter a valid github.com profile URL.')
+        return github_url
 
 
 class ChangePasswordForm(forms.Form):

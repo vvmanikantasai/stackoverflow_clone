@@ -5,9 +5,6 @@
       <button class="comment-vote-btn {% if comment.user_vote == 1 %}active{% endif %}" data-url="{% url 'vote_comment' comment.pk 1 %}" title="Upvote comment">▲</button>
     {% endif %}
     <span class="comment-vote-count">{{ comment.vote_count }}</span>
-    {% if request.user.is_authenticated %}
-      <button class="comment-vote-btn {% if comment.user_vote == -1 %}active{% endif %}" data-url="{% url 'vote_comment' comment.pk -1 %}" title="Downvote comment">▼</button>
-    {% endif %}
   </div>
 
   <div class="comment-main">

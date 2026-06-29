@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Count, F, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -10,7 +11,7 @@ from django.utils.text import slugify
 
 from answers.forms import AnswerForm
 from answers.models import Answer
-from badges.utils import check_and_award_badges
+from badges.tasks import award_badges
 from comments.forms import CommentForm
 from comments.models import Comment
 from tags.models import Tag
@@ -156,7 +157,7 @@ def ask_question_view(request):
             )
             save_question_images(question, request.FILES.getlist('images'))
 
-            check_and_award_badges(request.user)
+            transaction.on_commit(lambda: award_badges.delay(request.user.pk))
             messages.success(request, 'Question posted successfully!')
             return redirect('question_detail', slug=question.slug)
     else:

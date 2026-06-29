@@ -16,6 +16,13 @@ class Answer(models.Model):
     class Meta:
         db_table = 'answers'
         ordering = ['-is_accepted', '-vote_count', 'created_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['question'],
+                condition=models.Q(is_accepted=True),
+                name='one_accepted_answer_per_question',
+            ),
+        ]
 
     def __str__(self):
         return f'Answer by {self.author.username} on {self.question.title}'

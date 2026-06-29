@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Stack Overflow - Where Developers Learn, Share, & Build Careers{% endblock %}</title>
-  <meta name="description" content="{% block meta_desc %}StackIt is a community-driven Q&A platform for developers.{% endblock %}">
+  <meta name="description" content="{% block meta_desc %}Stack Overflow is a community-driven Q&A platform for developers.{% endblock %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300..700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=responsive-20260629-1">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=core-features-20260629-4">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
   {% block extra_head %}{% endblock %}
 </head>
@@ -42,6 +42,12 @@
         <span class="material-symbols-outlined">search</span>
       </button>
       {% if request.user.is_authenticated %}
+        <a href="{% url 'notifications' %}" class="topbar-icon notification-link" aria-label="Notifications" title="Notifications">
+          <span class="material-symbols-outlined">notifications</span>
+          {% if unread_notification_count %}
+            <span class="notification-count">{{ unread_notification_count }}</span>
+          {% endif %}
+        </a>
         <a href="{% url 'ask_question' %}" class="btn btn-primary">Ask Question</a>
         <div class="avatar-menu">
           <button class="avatar-btn" type="button" aria-label="User menu">
@@ -125,6 +131,12 @@
             <span class="sidebar-icon material-symbols-outlined">bookmark</span> Saved
           </a>
         </li>
+        <li>
+          <a href="{% url 'notifications' %}" class="sidebar-link {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}">
+            <span class="sidebar-icon material-symbols-outlined">notifications</span>
+            Notifications{% if unread_notification_count %} ({{ unread_notification_count }}){% endif %}
+          </a>
+        </li>
       {% endif %}
     </ul>
   </aside>
@@ -133,7 +145,7 @@
   {% block content %}{% endblock %}
 </div>
 
-<script src="{% static 'js/main.js' %}?v=beginner-cleanup-20260628-1"></script>
+<script src="{% static 'js/main.js' %}?v=core-features-20260629-2"></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

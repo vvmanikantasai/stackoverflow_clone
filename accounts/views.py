@@ -9,6 +9,7 @@ from badges.models import UserBadge
 
 from .forms import RegisterForm, LoginForm, ProfileUpdateForm, ChangePasswordForm
 from .models import Follow, ReputationHistory
+from notifications.services import create_notification
 
 
 def try_email_login(request):
@@ -38,7 +39,7 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, f'Welcome to StackIt, {user.username}!')
+            messages.success(request, f'Welcome to Stack Overflow, {user.username}!')
             return redirect('home')
     else:
         form = RegisterForm()
@@ -83,10 +84,26 @@ def logout_view(request):
 def profile_view(request, username):
     profile_user = get_object_or_404(User, username=username)
     profile = profile_user.profile
-    questions = profile_user.questions.filter(is_deleted=False).order_by('-created_at')[:5]
-    answers = profile_user.answers.filter(is_deleted=False).order_by('-created_at')[:5]
+    active_tab = request.GET.get('tab', 'overview')
+    valid_tabs = {'overview', 'reputation', 'questions', 'answers', 'badges'}
+    if active_tab not in valid_tabs:
+        active_tab = 'overview'
+
+    questions_qs = (
+        profile_user.questions.filter(is_deleted=False)
+        .prefetch_related('tags')
+        .order_by('-created_at')
+    )
+    answers_qs = (
+        profile_user.answers.filter(is_deleted=False)
+        .select_related('question')
+        .order_by('-created_at')
+    )
+    questions = questions_qs if active_tab == 'questions' else questions_qs[:5]
+    answers = answers_qs if active_tab == 'answers' else answers_qs[:5]
     user_badges = UserBadge.objects.filter(user=profile_user).select_related('badge')
-    rep_history = ReputationHistory.objects.filter(user=profile_user)[:10]
+    rep_history_qs = ReputationHistory.objects.filter(user=profile_user)
+    rep_history = rep_history_qs[:100] if active_tab == 'reputation' else rep_history_qs[:10]
     follower_count = profile_user.follower_relationships.count()
     following_count = profile_user.following_relationships.count()
 
@@ -106,6 +123,10 @@ def profile_view(request, username):
         'follower_count': follower_count,
         'following_count': following_count,
         'is_following': is_following,
+        'active_tab': active_tab,
+        'question_count': questions_qs.count(),
+        'answer_count': answers_qs.count(),
+        'badge_count': user_badges.count(),
     }
     return render(request, 'accounts/profile.html', context)
 
@@ -123,6 +144,12 @@ def toggle_follow_view(request, username):
             follow.delete()
             messages.info(request, f'You unfollowed {target.username}.')
         else:
+            create_notification(
+                recipient=target,
+                actor=request.user,
+                message='started following you.',
+                target_url=f'/accounts/profile/{request.user.username}/',
+            )
             messages.success(request, f'You are now following {target.username}.')
     return redirect('profile', username=username)
 

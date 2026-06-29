@@ -14,6 +14,7 @@ urlpatterns = [
     path('badges/', include('badges.urls')),
     path('reports/', include('reports.urls')),
     path('votes/', include('votes.urls')),
+    path('notifications/', include('notifications.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if not settings.DEBUG:

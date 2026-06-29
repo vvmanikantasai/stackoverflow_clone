@@ -1,16 +1,20 @@
 {% extends 'base.html' %}
-{% block title %}Tags – StackIt{% endblock %}
+{% block title %}Tags - Stack Overflow{% endblock %}
 {% block content %}
 <main class="main-content">
   <div class="page-header"><h1>Tags</h1></div>
   <p class="text-muted text-sm" style="margin-bottom:16px;">A tag is a keyword or label that categorizes your question with other, similar questions.</p>
-  <div style="margin-bottom:20px;max-width:360px;">
-    <form method="get">
-      <div style="display:flex;gap:8px;">
-        <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Search tags…">
-        <button type="submit" class="btn btn-ghost">Filter</button>
-      </div>
+  <div class="tag-controls">
+    <form method="get" class="tag-search-form">
+      <input type="text" name="q" value="{{ search }}" class="form-control"
+             placeholder="Search tags…" aria-label="Search tags">
+      <input type="hidden" name="sort" value="{{ sort }}">
     </form>
+    <div class="filter-tabs">
+      <a class="filter-tab {% if sort == 'popular' %}active{% endif %}" href="?sort=popular{% if search %}&q={{ search|urlencode }}{% endif %}">Popular</a>
+      <a class="filter-tab {% if sort == 'name' %}active{% endif %}" href="?sort=name{% if search %}&q={{ search|urlencode }}{% endif %}">Name</a>
+      <a class="filter-tab {% if sort == 'new' %}active{% endif %}" href="?sort=new{% if search %}&q={{ search|urlencode }}{% endif %}">New</a>
+    </div>
   </div>
   <div class="tags-grid">
     {% for tag in page.object_list %}

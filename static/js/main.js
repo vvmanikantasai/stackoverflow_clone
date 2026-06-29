@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (dm === 'true') document.documentElement.setAttribute('data-theme', 'dark');
 
   initVoting();
+  initSharing();
   initBookmark();
   initComments();
   initEditor();
@@ -48,11 +49,11 @@ function initVoting() {
 
       try {
         const res = await fetch(`/votes/${contentType}/${objectId}/${value}/`, {
-          method: 'GET',
+          method: 'POST',
           headers: { 'X-CSRFToken': getCsrfToken(), 'X-Requested-With': 'XMLHttpRequest' }
         });
         const data = await res.json();
-        if (data.error) { showToast(data.error, 'error'); return; }
+        if (!res.ok || data.error) { showToast(data.error || 'Could not vote.', 'error'); return; }
 
         const countEl = voteCell.querySelector('.vote-count-display');
         if (countEl) countEl.textContent = data.vote_count;
@@ -69,6 +70,41 @@ function initVoting() {
       } finally {
         delete this.dataset.loading;
         voteCell.classList.remove('loading');
+      }
+    });
+  });
+}
+
+// ===== SHARE LINKS =====
+function initSharing() {
+  document.querySelectorAll('.share-btn').forEach(btn => {
+    btn.addEventListener('click', async function () {
+      const url = new URL(this.dataset.sharePath || window.location.pathname, window.location.origin).href;
+      const title = this.dataset.shareTitle || document.title;
+
+      if (navigator.share) {
+        try {
+          await navigator.share({ title, url });
+          return;
+        } catch (error) {
+          if (error.name === 'AbortError') return;
+        }
+      }
+
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast('Link copied to clipboard.', 'success');
+      } catch (error) {
+        const temporaryInput = document.createElement('input');
+        temporaryInput.value = url;
+        temporaryInput.setAttribute('readonly', '');
+        temporaryInput.style.position = 'fixed';
+        temporaryInput.style.opacity = '0';
+        document.body.appendChild(temporaryInput);
+        temporaryInput.select();
+        const copied = document.execCommand('copy');
+        temporaryInput.remove();
+        showToast(copied ? 'Link copied to clipboard.' : url, copied ? 'success' : 'info');
       }
     });
   });
@@ -487,14 +523,6 @@ function initMobileSearch() {
 
 // ===== CONFIRMATIONS =====
 function initConfirmations() {
-  document.querySelectorAll('.accept-answer-form').forEach(form => {
-    form.addEventListener('submit', function (event) {
-      if (!confirm('Mark this answer as accepted?')) {
-        event.preventDefault();
-      }
-    });
-  });
-
   document.querySelectorAll('[data-confirm]').forEach(element => {
     element.addEventListener('click', function (event) {
       const message = this.dataset.confirm || 'Are you sure?';

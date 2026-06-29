@@ -1,9 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
 
-from accounts.models import ReputationHistory
+from accounts.models import Profile, ReputationHistory
 from answers.models import Answer
 from questions.models import Question
 
@@ -73,12 +75,16 @@ def apply_reputation(user, target_obj, vote_value, is_removal=False):
             answer=target_obj,
         )
 
-    user.profile.reputation = max(0, user.profile.reputation + points)
-    user.profile.save(update_fields=['reputation'])
+    profile = Profile.objects.select_for_update().get(user=user)
+    profile.reputation = max(0, profile.reputation + points)
+    profile.save(update_fields=['reputation'])
 
 
 @login_required
+@require_POST
+@transaction.atomic
 def vote_view(request, content_type, object_id, value):
+    value = int(value)
     if value not in [1, -1]:
         return JsonResponse({'error': 'Invalid vote'}, status=400)
 
@@ -89,6 +95,8 @@ def vote_view(request, content_type, object_id, value):
     if target.author == request.user:
         error = f'Cannot vote on your own {content_type}'
         return JsonResponse({'error': error, 'vote_count': target.vote_count})
+
+    target = type(target).objects.select_for_update().get(pk=target.pk)
 
     existing_vote = Vote.objects.filter(
         user=request.user,

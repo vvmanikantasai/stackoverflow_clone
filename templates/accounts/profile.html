@@ -1,51 +1,64 @@
 {% extends 'base.html' %}
 {% load static humanize markdown_extras %}
-{% block title %}{{ profile_user.username }} – StackIt{% endblock %}
+{% block title %}{{ profile_user.username }} - Stack Overflow{% endblock %}
 {% block content %}
-<main class="main-content">
+<main class="main-content profile-page">
   <div class="profile-header">
     <img class="profile-avatar" src="{% if profile.avatar %}{{ profile.get_avatar_url }}{% else %}{% static 'images/default_avatar.svg' %}{% endif %}" alt="{{ profile_user.username }}">
-    <div class="profile-info" style="flex:1;">
+    <div class="profile-info">
       <h1>{{ profile_user.username }}</h1>
       {% if profile_user.first_name or profile_user.last_name %}
-        <div style="font-size:15px;color:var(--text-secondary);margin-bottom:4px;">{{ profile_user.get_full_name }}</div>
+        <div class="profile-full-name">{{ profile_user.get_full_name }}</div>
       {% endif %}
       <div class="profile-meta">
-        <span>📅 Joined {{ profile.joined_date|date:"M Y" }}</span>
-        {% if profile.location %}<span>📍 {{ profile.location }}</span>{% endif %}
-        {% if profile.website %}<span><a href="{{ profile.website }}" target="_blank" rel="noopener">🌐 Website</a></span>{% endif %}
+        <span><span class="material-symbols-outlined">calendar_month</span> Member since {{ profile.joined_date|date:"M Y" }}</span>
+        {% if profile.location %}<span><span class="material-symbols-outlined">location_on</span> {{ profile.location }}</span>{% endif %}
+        {% if profile.website %}<a href="{{ profile.website }}" target="_blank" rel="noopener noreferrer"><span class="material-symbols-outlined">link</span> Website</a>{% endif %}
+        {% if profile.github_url %}
+        <a class="github-profile-link" href="{{ profile.github_url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ profile_user.username }} on GitHub">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2.23c-3.22.7-3.9-1.36-3.9-1.36-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.04 1.77 2.72 1.26 3.38.96.1-.75.4-1.26.73-1.55-2.57-.29-5.27-1.28-5.27-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.47.11-3.05 0 0 .97-.31 3.16 1.18a10.94 10.94 0 0 1 5.76 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.58.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.71 5.39-5.29 5.68.42.36.79 1.07.79 2.16v3.2c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg>
+          GitHub
+        </a>
+        {% endif %}
       </div>
       {% if profile.bio %}<p class="profile-bio">{{ profile.bio }}</p>{% endif %}
     </div>
-    {% if request.user == profile_user %}
-    <a href="{% url 'edit_profile' %}" class="btn btn-ghost">Edit Profile</a>
-    {% elif request.user.is_authenticated %}
-    <form method="post" action="{% url 'toggle_follow' profile_user.username %}">
-      {% csrf_token %}
-      <button type="submit" class="btn {% if is_following %}btn-ghost{% else %}btn-primary{% endif %}">
-        {% if is_following %}Following{% else %}Follow{% endif %}
-      </button>
-    </form>
-    {% endif %}
+    <div class="profile-actions">
+      {% if request.user == profile_user %}
+        <a href="{% url 'edit_profile' %}" class="btn btn-ghost">Edit profile</a>
+      {% elif request.user.is_authenticated %}
+        <form method="post" action="{% url 'toggle_follow' profile_user.username %}">
+          {% csrf_token %}
+          <button type="submit" class="btn {% if is_following %}btn-ghost{% else %}btn-primary{% endif %}">
+            {% if is_following %}Following{% else %}Follow{% endif %}
+          </button>
+        </form>
+      {% endif %}
+    </div>
   </div>
 
-  <div class="profile-stats">
-    <div class="profile-stat">
+  <nav class="profile-tabs" aria-label="Profile sections">
+    <a href="?tab=overview" class="{% if active_tab == 'overview' %}active{% endif %}">Profile</a>
+    <a href="?tab=reputation" class="{% if active_tab == 'reputation' %}active{% endif %}">Activity</a>
+  </nav>
+
+  <div class="profile-stats" aria-label="User statistics">
+    <a href="?tab=reputation" class="profile-stat {% if active_tab == 'reputation' %}active{% endif %}">
       <div class="stat-value">{{ profile.reputation|intcomma }}</div>
       <div class="stat-label">Reputation</div>
-    </div>
-    <div class="profile-stat">
-      <div class="stat-value">{{ profile.questions_count }}</div>
+    </a>
+    <a href="?tab=questions" class="profile-stat {% if active_tab == 'questions' %}active{% endif %}">
+      <div class="stat-value">{{ question_count }}</div>
       <div class="stat-label">Questions</div>
-    </div>
-    <div class="profile-stat">
-      <div class="stat-value">{{ profile.answers_count }}</div>
+    </a>
+    <a href="?tab=answers" class="profile-stat {% if active_tab == 'answers' %}active{% endif %}">
+      <div class="stat-value">{{ answer_count }}</div>
       <div class="stat-label">Answers</div>
-    </div>
-    <div class="profile-stat">
-      <div class="stat-value">{{ profile.badges_count }}</div>
+    </a>
+    <a href="?tab=badges" class="profile-stat {% if active_tab == 'badges' %}active{% endif %}">
+      <div class="stat-value">{{ badge_count }}</div>
       <div class="stat-label">Badges</div>
-    </div>
+    </a>
     <a href="{% url 'followers' profile_user.username %}" class="profile-stat">
       <div class="stat-value">{{ follower_count }}</div>
       <div class="stat-label">Followers</div>
@@ -56,73 +69,120 @@
     </a>
   </div>
 
-  {% if user_badges %}
-  <div style="margin-bottom:24px;">
-    <h3 style="font-size:15px;font-weight:600;margin-bottom:10px;">Badges</h3>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;">
-      {% for ub in user_badges %}
-      <div class="so-badge-pill">
-        <span class="badge-dot {{ ub.badge.tier }}"></span>
-        <span>{{ ub.badge.name }}</span>
-        <span class="badge-tier-name">{{ ub.badge.tier|title }}</span>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
-
-  <h3 style="font-size:15px;font-weight:600;margin-bottom:12px;">Recent Questions</h3>
-  {% if questions %}
-    <div class="question-list" style="margin-bottom:24px;">
-      {% for q in questions %}
-      <div class="question-card">
-        <div class="question-stats">
-          <div class="stat-item"><span class="stat-number">{{ q.vote_count }}</span><span>votes</span></div>
-          <div class="stat-item {% if q.answer_count > 0 %}has-answers{% endif %}"><span class="stat-number">{{ q.answer_count }}</span><span>ans</span></div>
+  {% if active_tab == 'badges' %}
+    <section class="profile-section">
+      <h2>Badges</h2>
+      <div class="profile-badge-grid">
+        {% for ub in user_badges %}
+        <div class="so-badge-pill">
+          <span class="badge-dot {{ ub.badge.tier }}"></span>
+          <span>{{ ub.badge.name }}</span>
+          <span class="badge-tier-name">{{ ub.badge.tier|title }}</span>
         </div>
-        <div class="question-body">
-          <div class="question-title"><a href="{{ q.get_absolute_url }}">{{ q.title }}</a></div>
-          <div class="question-meta">
-            <div class="tags-list">{% for tag in q.tags.all %}<a href="{% url 'tag_detail' tag.slug %}" class="tag">{{ tag.name }}</a>{% endfor %}</div>
-            <div class="author-info">{{ q.created_at|naturaltime }}</div>
+        {% empty %}
+        <p class="text-muted">No badges earned yet.</p>
+        {% endfor %}
+      </div>
+    </section>
+  {% elif active_tab == 'reputation' %}
+    <section class="profile-section">
+      <h2>Reputation activity</h2>
+      <div class="reputation-list">
+        {% for rh in rep_history %}
+        <div class="reputation-row">
+          <strong class="{% if rh.points > 0 %}positive{% else %}negative{% endif %}">{{ rh.points|stringformat:"+d" }}</strong>
+          <span>{{ rh.description }}</span>
+          <time>{{ rh.created_at|naturaltime }}</time>
+        </div>
+        {% empty %}
+        <p class="text-muted">No reputation activity yet.</p>
+        {% endfor %}
+      </div>
+    </section>
+  {% else %}
+    {% if active_tab == 'overview' or active_tab == 'questions' %}
+    <section class="profile-section">
+      <h2>{% if active_tab == 'questions' %}Questions{% else %}Recent questions{% endif %}</h2>
+      <div class="question-list">
+        {% for q in questions %}
+        <div class="question-card compact-question-card">
+          <div class="question-stats">
+            <div class="stat-item"><span class="stat-number">{{ q.vote_count }}</span><span>votes</span></div>
+            <div class="stat-item {% if q.has_accepted_answer %}has-accepted{% elif q.answer_count > 0 %}has-answers{% endif %}">
+              <span class="stat-number">{{ q.answer_count }}</span><span>answers</span>
+            </div>
+          </div>
+          <div class="question-body">
+            <div class="question-title"><a href="{{ q.get_absolute_url }}">{{ q.title }}</a></div>
+            <div class="question-meta">
+              <div class="tags-list">{% for tag in q.tags.all %}<a href="{% url 'tag_detail' tag.slug %}" class="tag">{{ tag.name }}</a>{% endfor %}</div>
+              <time class="author-info">{{ q.created_at|naturaltime }}</time>
+            </div>
           </div>
         </div>
+        {% empty %}
+        <p class="text-muted">No questions asked yet.</p>
+        {% endfor %}
       </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <p class="text-muted text-sm" style="margin-bottom:24px;">No questions asked yet.</p>
-  {% endif %}
+    </section>
+    {% endif %}
 
-  <h3 style="font-size:15px;font-weight:600;margin-bottom:12px;">Recent Answers</h3>
-  {% if answers %}
-    {% for a in answers %}
-    <div style="padding:12px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;">
-      <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px;">
-        Answered on <a href="{{ a.question.get_absolute_url }}">{{ a.question.title|truncatechars:60 }}</a>
-        {% if a.is_accepted %}<span style="color:var(--green);font-weight:600;"> ✓ Accepted</span>{% endif %}
+    {% if active_tab == 'overview' or active_tab == 'answers' %}
+    <section class="profile-section">
+      <h2>{% if active_tab == 'answers' %}Answers{% else %}Recent answers{% endif %}</h2>
+      <div class="profile-answer-list">
+        {% for a in answers %}
+        <a class="profile-answer-row" href="{{ a.question.get_absolute_url }}#answer-{{ a.pk }}">
+          <span class="answer-score {% if a.is_accepted %}accepted{% endif %}">{{ a.vote_count }}</span>
+          <span>
+            <strong>{{ a.question.title }}</strong>
+            <small>{{ a.content|render_markdown|striptags|truncatechars:130 }}</small>
+          </span>
+          <time>{{ a.created_at|naturaltime }}</time>
+        </a>
+        {% empty %}
+        <p class="text-muted">No answers posted yet.</p>
+        {% endfor %}
       </div>
-      <div style="font-size:13px;color:var(--text-secondary);">{{ a.content|render_markdown|striptags|truncatechars:120 }}</div>
-    </div>
-    {% endfor %}
-  {% else %}
-    <p class="text-muted text-sm">No answers yet.</p>
+    </section>
+    {% endif %}
   {% endif %}
 </main>
-
 <aside class="right-sidebar">
-  {% if rep_history %}
-  <div class="sidebar-widget">
-    <div class="widget-header">📊 Reputation History</div>
-    <div class="widget-body">
-      {% for rh in rep_history %}
-      <div class="widget-item">
-        <span style="color:{% if rh.points > 0 %}var(--green){% else %}var(--red){% endif %};font-weight:600;">{{ rh.points|stringformat:"+d" }}</span>
-        <span style="flex:1;font-size:12px;color:var(--text-muted);">{{ rh.description|truncatechars:40 }}</span>
+  <div class="sidebar-widget profile-about-widget">
+    <div class="widget-header">
+      <span class="material-symbols-outlined" aria-hidden="true">person</span>
+      About {{ profile_user.username }}
+    </div>
+    <div class="widget-body profile-about">
+      <div class="profile-about-row">
+        <span class="profile-about-icon material-symbols-outlined" aria-hidden="true">workspace_premium</span>
+        <span class="profile-about-copy">
+          <strong>{{ profile.reputation|intcomma }}</strong>
+          <small>Reputation earned</small>
+        </span>
       </div>
-      {% endfor %}
+      <div class="profile-about-row">
+        <span class="profile-about-icon material-symbols-outlined" aria-hidden="true">calendar_month</span>
+        <span class="profile-about-copy">
+          <strong>{{ profile.joined_date|date:"F Y" }}</strong>
+          <small>Member for {{ profile.joined_date|timesince }}</small>
+        </span>
+      </div>
+      <div class="profile-about-row">
+        <span class="profile-about-icon material-symbols-outlined" aria-hidden="true">group</span>
+        <span class="profile-about-copy">
+          <strong>{{ follower_count }} follower{{ follower_count|pluralize }}</strong>
+          <small>Following {{ following_count }} member{{ following_count|pluralize }}</small>
+        </span>
+      </div>
+
+      <div class="profile-about-contributions">
+        <span><strong>{{ question_count }}</strong> question{{ question_count|pluralize }}</span>
+        <span><strong>{{ answer_count }}</strong> answer{{ answer_count|pluralize }}</span>
+        <span><strong>{{ badge_count }}</strong> badge{{ badge_count|pluralize }}</span>
+      </div>
     </div>
   </div>
-  {% endif %}
 </aside>
 {% endblock %}
