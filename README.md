@@ -49,6 +49,20 @@ Open your browser and visit:
 http://127.0.0.1:8000
 ```
 
+## Production media storage
+
+Local development stores uploaded profile and question images in `media/`.
+Production uses Cloudinary automatically when this environment variable is set:
+
+```env
+CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+```
+
+Add `CLOUDINARY_URL` as a secret environment variable in Render. Do not commit
+the value to Git. New uploads will then be stored in Cloudinary under the
+`stackit/avatars` and `stackit/question_images` folders. Static CSS and
+JavaScript continue to use WhiteNoise.
+
 ## Project Structure
 
 ```

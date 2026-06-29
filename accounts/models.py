@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.templatetags.static import static
@@ -42,7 +43,13 @@ class Profile(models.Model):
     def get_avatar_url(self):
         if self.avatar and hasattr(self.avatar, 'url'):
             try:
-                if self.avatar.name and not self.avatar.storage.exists(self.avatar.name):
+                is_default = self.avatar.name == 'avatars/default.png'
+                is_missing_local_file = (
+                    not settings.USE_CLOUDINARY_MEDIA
+                    and self.avatar.name
+                    and not self.avatar.storage.exists(self.avatar.name)
+                )
+                if is_default or is_missing_local_file:
                     return static('images/default_avatar.svg')
                 return self.avatar.url
             except Exception:

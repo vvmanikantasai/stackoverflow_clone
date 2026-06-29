@@ -23,3 +23,5 @@ services:
         generateValue: true
       - key: DEBUG
         value: "False"
+      - key: CLOUDINARY_URL
+        sync: false

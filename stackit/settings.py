@@ -9,6 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+USE_CLOUDINARY_MEDIA = bool(os.environ.get('CLOUDINARY_URL'))
 
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
@@ -44,6 +45,8 @@ INSTALLED_APPS = [
     'reports',
     'notifications',
 ]
+if USE_CLOUDINARY_MEDIA:
+    INSTALLED_APPS.append('cloudinary')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -114,7 +117,11 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STORAGES = {
     'default': {
-        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+        'BACKEND': (
+            'stackit.storage.CloudinaryMediaStorage'
+            if USE_CLOUDINARY_MEDIA
+            else 'django.core.files.storage.FileSystemStorage'
+        ),
     },
     'staticfiles': {
         'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
