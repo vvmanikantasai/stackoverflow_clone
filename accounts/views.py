@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 
 from badges.models import UserBadge
@@ -37,8 +38,9 @@ def register_view(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
+            with transaction.atomic():
+                user = form.save()
+                login(request, user)
             messages.success(request, f'Welcome to Stack Overflow, {user.username}!')
             return redirect('home')
     else:
