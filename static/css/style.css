@@ -1101,82 +1101,6 @@ textarea.form-control { resize: vertical; min-height: 120px; line-height: 1.5; }
 }
 
 /* ===== CORE FEATURE POLISH ===== */
-.notification-link {
-  position: relative;
-  text-decoration: none;
-}
-
-.notification-count {
-  position: absolute;
-  top: -2px;
-  right: -5px;
-  min-width: 17px;
-  height: 17px;
-  padding: 0 4px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid var(--bg);
-  border-radius: 999px;
-  background: var(--red);
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.notification-page {
-  min-height: 600px;
-}
-
-.notification-list {
-  border-top: 1px solid var(--border);
-}
-
-.notification-item {
-  display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) 10px;
-  align-items: start;
-  gap: 10px;
-  padding: 14px 12px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-secondary);
-}
-
-.notification-item:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-.notification-item.unread {
-  background: var(--blue-bg);
-}
-
-.notification-symbol {
-  color: var(--text-muted);
-}
-
-.notification-copy,
-.notification-copy small {
-  display: block;
-}
-
-.notification-copy strong {
-  color: var(--text-primary);
-}
-
-.notification-copy small {
-  margin-top: 3px;
-  color: var(--text-muted);
-}
-
-.unread-dot {
-  width: 8px;
-  height: 8px;
-  margin-top: 6px;
-  border-radius: 50%;
-  background: var(--blue);
-}
 
 .tag-controls {
   display: flex;
@@ -1452,8 +1376,7 @@ textarea.form-control { resize: vertical; min-height: 120px; line-height: 1.5; }
 [data-theme="dark"] .tag-card,
 [data-theme="dark"] .user-card,
 [data-theme="dark"] .badge-card,
-[data-theme="dark"] .answer-block,
-[data-theme="dark"] .notification-item {
+[data-theme="dark"] .answer-block {
   background: var(--bg);
   color: var(--text-primary);
 }
@@ -1469,8 +1392,7 @@ textarea.form-control { resize: vertical; min-height: 120px; line-height: 1.5; }
 [data-theme="dark"] .comment-content,
 [data-theme="dark"] .comment-text,
 [data-theme="dark"] .profile-answer-row,
-[data-theme="dark"] .profile-answer-row strong,
-[data-theme="dark"] .notification-copy strong {
+[data-theme="dark"] .profile-answer-row strong {
   color: var(--text-primary);
 }
 
@@ -1487,14 +1409,9 @@ textarea.form-control { resize: vertical; min-height: 120px; line-height: 1.5; }
 [data-theme="dark"] .sidebar-link.active,
 [data-theme="dark"] .profile-stat:hover,
 [data-theme="dark"] .profile-stat.active,
-[data-theme="dark"] .profile-answer-row:hover,
-[data-theme="dark"] .notification-item:hover {
+[data-theme="dark"] .profile-answer-row:hover {
   background: var(--bg-tertiary);
   color: var(--text-primary);
-}
-
-[data-theme="dark"] .notification-item.unread {
-  background: var(--blue-bg);
 }
 
 [data-theme="dark"] .tag,
@@ -1527,9 +1444,7 @@ textarea.form-control { resize: vertical; min-height: 120px; line-height: 1.5; }
 [data-theme="dark"] .profile-answer-list,
 [data-theme="dark"] .reputation-list,
 [data-theme="dark"] .profile-answer-row,
-[data-theme="dark"] .reputation-row,
-[data-theme="dark"] .notification-list,
-[data-theme="dark"] .notification-item {
+[data-theme="dark"] .reputation-row {
   border-color: var(--border);
 }
 

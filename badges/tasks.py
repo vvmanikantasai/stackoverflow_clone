@@ -1,8 +1,6 @@
 from celery import shared_task
 from django.contrib.auth.models import User
 
-from notifications.services import create_notification
-
 from .utils import check_and_award_badges
 
 
@@ -14,11 +12,4 @@ def award_badges(user_id):
         return []
 
     awarded = check_and_award_badges(user)
-    for badge in awarded:
-        create_notification(
-            recipient=user,
-            actor=None,
-            message=f'You earned the {badge.name} badge.',
-            target_url='/badges/',
-        )
     return [badge.name for badge in awarded]

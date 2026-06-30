@@ -10,7 +10,6 @@ from badges.models import UserBadge
 
 from .forms import RegisterForm, LoginForm, ProfileUpdateForm, ChangePasswordForm
 from .models import Follow, ReputationHistory
-from notifications.services import create_notification
 
 
 def try_email_login(request):
@@ -146,12 +145,6 @@ def toggle_follow_view(request, username):
             follow.delete()
             messages.info(request, f'You unfollowed {target.username}.')
         else:
-            create_notification(
-                recipient=target,
-                actor=request.user,
-                message='started following you.',
-                target_url=f'/accounts/profile/{request.user.username}/',
-            )
             messages.success(request, f'You are now following {target.username}.')
     return redirect('profile', username=username)
 

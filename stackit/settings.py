@@ -55,7 +55,6 @@ INSTALLED_APPS = [
     'tags',
     'badges',
     'reports',
-    'notifications',
 ]
 if USE_CLOUDINARY_MEDIA:
     INSTALLED_APPS.append('cloudinary')
@@ -84,7 +83,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'notifications.context_processors.notification_summary',
             ],
         },
     },

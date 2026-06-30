@@ -8,7 +8,6 @@ from django.shortcuts import get_object_or_404, redirect
 from answers.models import Answer
 from questions.models import Question
 from votes.models import Vote
-from notifications.services import create_notification
 
 from .forms import CommentForm
 from .models import Comment
@@ -67,14 +66,6 @@ def add_comment_view(request, content_type, object_id):
                 content_type=target_type,
                 object_id=object_id,
                 parent=parent,
-            )
-            recipient = parent.author if parent else target.author
-            action = 'replied to your comment' if parent else 'commented on your post'
-            create_notification(
-                recipient=recipient,
-                actor=request.user,
-                message=f'{action}.',
-                target_url=f'{get_question_url(target)}#comment-{comment.pk}',
             )
 
             if is_ajax(request):
