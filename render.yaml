@@ -23,6 +23,10 @@ services:
         generateValue: true
       - key: DEBUG
         value: "False"
+      - key: ALLOWED_HOSTS
+        value: stackit-web.onrender.com
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://stackit-web.onrender.com
       - key: CLOUDINARY_URL
         sync: false
       - key: ELASTICSEARCH_URL
