@@ -20,7 +20,6 @@ class Profile(models.Model):
     email_verification_token = models.CharField(max_length=100, blank=True)
     password_reset_token = models.CharField(max_length=100, blank=True)
     password_reset_expires = models.DateTimeField(null=True, blank=True)
-    dark_mode = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'profiles'

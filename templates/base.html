@@ -1,5 +1,5 @@
 {% load static %}{% load humanize %}<!DOCTYPE html>
-<html lang="en" {% if request.user.is_authenticated and request.user.profile.dark_mode %}data-theme="dark"{% endif %}>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,11 +8,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300..700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=profile-layout-20260630-1">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=light-theme-20260630-1">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
   {% block extra_head %}{% endblock %}
 </head>
-<body data-dark-mode="{% if request.user.is_authenticated and request.user.profile.dark_mode %}true{% else %}false{% endif %}">
+<body>
 
 <!-- NAVBAR -->
 <nav class="navbar">
@@ -56,7 +56,6 @@
             <a href="{% url 'saved_questions' %}" class="dropdown-item"><span class="material-symbols-outlined">bookmark</span> Saved Questions</a>
             <hr class="dropdown-divider">
             <a href="{% url 'edit_profile' %}" class="dropdown-item"><span class="material-symbols-outlined">settings</span> Edit Profile</a>
-            <a href="{% url 'toggle_dark_mode' %}" class="dropdown-item"><span class="material-symbols-outlined">{% if request.user.profile.dark_mode %}light_mode{% else %}dark_mode{% endif %}</span> {% if request.user.profile.dark_mode %}Light Mode{% else %}Dark Mode{% endif %}</a>
             <hr class="dropdown-divider">
             {% if request.user.is_staff %}
               <a href="{% url 'admin:index' %}" class="dropdown-item"><span class="material-symbols-outlined">admin_panel_settings</span> Admin Panel</a>

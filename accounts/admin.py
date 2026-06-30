@@ -16,7 +16,6 @@ class ProfileInline(admin.StackedInline):
         'github_url',
         'x_url',
         'location',
-        'dark_mode',
     ]
 
 

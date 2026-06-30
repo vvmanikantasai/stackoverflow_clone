@@ -239,11 +239,3 @@ def users_list_view(request):
         'search': search,
     }
     return render(request, 'accounts/users.html', context)
-
-
-@login_required
-def toggle_dark_mode(request):
-    profile = request.user.profile
-    profile.dark_mode = not profile.dark_mode
-    profile.save()
-    return redirect(request.META.get('HTTP_REFERER', '/'))

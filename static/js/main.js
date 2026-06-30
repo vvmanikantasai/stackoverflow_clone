@@ -18,10 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', () => avatarMenu.classList.remove('open'));
   }
 
-  // Dark mode from profile
-  const dm = document.body.dataset.darkMode;
-  if (dm === 'true') document.documentElement.setAttribute('data-theme', 'dark');
-
   initVoting();
   initSharing();
   initBookmark();
