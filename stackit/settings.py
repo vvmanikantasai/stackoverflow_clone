@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 import dj_database_url
@@ -36,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     # Local apps
     'accounts',
-    'questions',
+    'questions.apps.QuestionsConfig',
     'answers',
     'comments',
     'votes',
@@ -139,6 +140,19 @@ LOGOUT_REDIRECT_URL = '/'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'noreply@stackit.dev'
+
+# Elasticsearch is optional locally. When it is not configured or cannot be
+# reached, the search view falls back to the database.
+ELASTICSEARCH_URL = os.environ.get('ELASTICSEARCH_URL', '').strip()
+ELASTICSEARCH_API_KEY = os.environ.get('ELASTICSEARCH_API_KEY', '').strip()
+ELASTICSEARCH_USERNAME = os.environ.get('ELASTICSEARCH_USERNAME', '').strip()
+ELASTICSEARCH_PASSWORD = os.environ.get('ELASTICSEARCH_PASSWORD', '').strip()
+ELASTICSEARCH_INDEX = os.environ.get(
+    'ELASTICSEARCH_INDEX',
+    'stackit-questions',
+).strip()
+if 'test' in sys.argv:
+    ELASTICSEARCH_URL = ''
 
 # Celery runs tasks eagerly in development when no broker is configured. Set
 # CELERY_BROKER_URL (normally to Redis) for a real background worker.

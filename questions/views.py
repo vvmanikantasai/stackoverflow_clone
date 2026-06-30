@@ -23,6 +23,7 @@ from votes.models import Vote
 
 from .forms import QuestionForm
 from .models import Bookmark, Question, QuestionImage, RecentlyViewed
+from .search import search_questions
 
 
 def get_visible_questions():
@@ -314,32 +315,88 @@ def search_view(request):
     ]
     text_query = re.sub(r'\[[^\]]+\]', ' ', query).strip()
     results = []
+    search_engine = 'database'
     if query:
-        results = Question.objects.filter(is_deleted=False)
-        for tag_name in tag_filters:
-            results = results.filter(tags__name__iexact=tag_name)
-        if text_query:
-            results = results.filter(
-                Q(title__icontains=text_query)
-                | Q(content__icontains=text_query)
-            )
-        results = (
-            results.distinct()
-            .annotate(
-                has_accepted_result=Exists(
-                    Answer.objects.filter(
-                        question_id=OuterRef('pk'),
-                        is_accepted=True,
-                        is_deleted=False,
+        try:
+            requested_page = max(int(request.GET.get('page', 1)), 1)
+        except (TypeError, ValueError):
+            requested_page = 1
+
+        elasticsearch_result = search_questions(
+            text_query,
+            tag_filters,
+            requested_page,
+            15,
+        )
+        if elasticsearch_result is not None:
+            question_ids, total = elasticsearch_result
+            paginator = Paginator(range(total), 15)
+            page = paginator.get_page(requested_page)
+
+            if page.number != requested_page:
+                corrected_result = search_questions(
+                    text_query,
+                    tag_filters,
+                    page.number,
+                    15,
+                )
+                if corrected_result is not None:
+                    question_ids, _ = corrected_result
+
+            indexed_questions = (
+                Question.objects.filter(pk__in=question_ids, is_deleted=False)
+                .annotate(
+                    has_accepted_result=Exists(
+                        Answer.objects.filter(
+                            question_id=OuterRef('pk'),
+                            is_accepted=True,
+                            is_deleted=False,
+                        )
                     )
                 )
+                .select_related('author', 'author__profile')
+                .prefetch_related('tags')
             )
-            .select_related('author', 'author__profile')
-            .prefetch_related('tags')
-            .order_by('-vote_count')
-        )
-    paginator = Paginator(results, 15)
-    page = paginator.get_page(request.GET.get('page', 1))
+            questions_by_id = {
+                question.pk: question
+                for question in indexed_questions
+            }
+            page.object_list = [
+                questions_by_id[question_id]
+                for question_id in question_ids
+                if question_id in questions_by_id
+            ]
+            search_engine = 'elasticsearch'
+        else:
+            results = Question.objects.filter(is_deleted=False)
+            for tag_name in tag_filters:
+                results = results.filter(tags__name__iexact=tag_name)
+            if text_query:
+                results = results.filter(
+                    Q(title__icontains=text_query)
+                    | Q(content__icontains=text_query)
+                )
+            results = (
+                results.distinct()
+                .annotate(
+                    has_accepted_result=Exists(
+                        Answer.objects.filter(
+                            question_id=OuterRef('pk'),
+                            is_accepted=True,
+                            is_deleted=False,
+                        )
+                    )
+                )
+                .select_related('author', 'author__profile')
+                .prefetch_related('tags')
+                .order_by('-vote_count')
+            )
+            paginator = Paginator(results, 15)
+            page = paginator.get_page(request.GET.get('page', 1))
+    else:
+        paginator = Paginator(results, 15)
+        page = paginator.get_page(1)
+
     return render(
         request,
         'questions/search.html',
@@ -348,5 +405,6 @@ def search_view(request):
             'query': query,
             'tag_filters': tag_filters,
             'text_query': text_query,
+            'search_engine': search_engine,
         },
     )

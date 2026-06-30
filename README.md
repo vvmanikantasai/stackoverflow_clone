@@ -63,6 +63,33 @@ the value to Git. New uploads will then be stored in Cloudinary under the
 `stackit/avatars` and `stackit/question_images` folders. Static CSS and
 JavaScript continue to use WhiteNoise.
 
+## Elasticsearch
+
+Question search uses Elasticsearch when a cluster is configured. Set either an
+API key:
+
+```env
+ELASTICSEARCH_URL=https://your-elasticsearch-endpoint
+ELASTICSEARCH_API_KEY=your-api-key
+```
+
+or credentials for a self-managed cluster:
+
+```env
+ELASTICSEARCH_URL=https://localhost:9200
+ELASTICSEARCH_USERNAME=elastic
+ELASTICSEARCH_PASSWORD=your-password
+```
+
+Create the index and load existing questions after configuring the connection:
+
+```bash
+python manage.py rebuild_search_index
+```
+
+New and updated questions are indexed automatically. If Elasticsearch is not
+configured or is temporarily unavailable, search falls back to PostgreSQL.
+
 ## Project Structure
 
 ```

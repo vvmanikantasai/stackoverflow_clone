@@ -25,3 +25,7 @@ services:
         value: "False"
       - key: CLOUDINARY_URL
         sync: false
+      - key: ELASTICSEARCH_URL
+        sync: false
+      - key: ELASTICSEARCH_API_KEY
+        sync: false

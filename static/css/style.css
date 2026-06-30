@@ -2247,7 +2247,7 @@ body {
 
 /* ===== SCREENSHOT-MATCHED STACK OVERFLOW HOME ===== */
 :root {
-  --so-container: 1264px;
+  --so-container: 1240px;
   --so-left: 164px;
   --so-main: 752px;
   --so-right: 300px;
@@ -3394,17 +3394,17 @@ body {
 
 .main-content.profile-page,
 .main-content.search-results-page {
-  width: calc(var(--so-main) + var(--so-right) + var(--so-gap));
-  max-width: calc(var(--so-main) + var(--so-right) + var(--so-gap));
-  flex-basis: calc(var(--so-main) + var(--so-right) + var(--so-gap));
+  width: calc(var(--so-container) - var(--so-left));
+  max-width: calc(var(--so-container) - var(--so-left));
+  flex-basis: calc(var(--so-container) - var(--so-left));
 }
 
 @media (max-width: 1200px) {
   .main-content.profile-page,
   .main-content.search-results-page {
-    width: calc(100% - var(--so-left));
+    width: 0;
     max-width: none;
-    flex: 1 1 auto;
+    flex: 1 1 0;
   }
 }
 
