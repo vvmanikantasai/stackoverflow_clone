@@ -2,11 +2,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404, redirect, render
-
 from answers.models import Answer
 from comments.models import Comment
 from questions.models import Question
-
 from .models import Report
 
 

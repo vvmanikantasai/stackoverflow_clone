@@ -34,7 +34,6 @@ if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
 
 # Keep the current Render domain trusted even when its automatic hostname
-# variable is unavailable during a deploy.
 CSRF_TRUSTED_ORIGINS.append('https://stackit-web.onrender.com')
 CSRF_TRUSTED_ORIGINS = list(dict.fromkeys(CSRF_TRUSTED_ORIGINS))
 
@@ -90,7 +89,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'stackit.wsgi.application'
 
-# ===== DATABASE =====
+# DATABASE
 if os.environ.get('DATABASE_URL'):
     DATABASES = {
         'default': dj_database_url.config(
