@@ -4,14 +4,11 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import F
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
-
 from answers.models import Answer
 from questions.models import Question
 from votes.models import Vote
-
 from .forms import CommentForm
 from .models import Comment
-
 
 def is_ajax(request):
     return request.headers.get('X-Requested-With') == 'XMLHttpRequest'

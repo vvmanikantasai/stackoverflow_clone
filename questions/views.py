@@ -1,6 +1,5 @@
 import re
 from datetime import timedelta
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -12,7 +11,6 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.text import slugify
-
 from answers.forms import AnswerForm
 from answers.models import Answer
 from badges.tasks import award_badges
@@ -20,11 +18,9 @@ from comments.forms import CommentForm
 from comments.models import Comment
 from tags.models import Tag
 from votes.models import Vote
-
 from .forms import QuestionForm
 from .models import Bookmark, Question, QuestionImage, RecentlyViewed
 from .search import search_questions
-
 
 def get_visible_questions():
     """Return questions that should be shown on public pages."""
@@ -33,7 +29,6 @@ def get_visible_questions():
         .select_related('author', 'author__profile')
         .prefetch_related('tags')
     )
-
 
 def save_question_tags(question, tag_names, user):
     """Replace a question's tags with the names submitted in the form."""
@@ -49,12 +44,10 @@ def save_question_tags(question, tag_names, user):
         )
         question.tags.add(tag)
 
-
 def save_question_images(question, uploaded_images):
     """Save each uploaded image against the question."""
     for image in uploaded_images:
         QuestionImage.objects.create(question=question, image=image)
-
 
 def build_comment_tree(model_cls, object_id, user):
     content_type = ContentType.objects.get_for_model(model_cls)
@@ -95,7 +88,6 @@ def build_comment_tree(model_cls, object_id, user):
             root_comments.append(comment)
 
     return root_comments
-
 
 def home_view(request):
     filter_by = request.GET.get('filter', 'newest')
@@ -168,7 +160,6 @@ def ask_question_view(request):
     else:
         form = QuestionForm()
     return render(request, 'questions/ask.html', {'form': form})
-
 
 def question_detail_view(request, slug):
     question = get_object_or_404(Question, slug=slug, is_deleted=False)
@@ -276,7 +267,7 @@ def delete_question_view(request, slug):
         question.save()
         messages.success(request, 'Question deleted.')
         return redirect('home')
-    return render(request, 'questions/confirm_delete.html', {'question': question})
+    return redirect('question_detail', slug=slug)
 
 
 @login_required

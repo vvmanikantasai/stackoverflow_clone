@@ -5,7 +5,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.templatetags.static import static
 
-
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     avatar = models.ImageField(upload_to='avatars/', default='avatars/default.png', blank=True)
@@ -55,7 +54,6 @@ class Profile(models.Model):
                 pass
         return static('images/default_avatar.svg')
 
-
 class ReputationHistory(models.Model):
     ACTION_CHOICES = [
         ('question_upvote', 'Question Upvote (+5)'),
@@ -80,7 +78,6 @@ class ReputationHistory(models.Model):
     def __str__(self):
         return f'{self.user.username}: {self.action} ({self.points:+d})'
 
-
 class Follow(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following_relationships')
     following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='follower_relationships')
@@ -93,12 +90,10 @@ class Follow(models.Model):
     def __str__(self):
         return f'{self.follower.username} follows {self.following.username}'
 
-
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
-
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):

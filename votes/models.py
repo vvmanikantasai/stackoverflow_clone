@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
-
 class Vote(models.Model):
     VOTE_CHOICES = [(1, 'Upvote'), (-1, 'Downvote')]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='votes')

@@ -2,9 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 import re
-
 from .models import Profile
-
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(
@@ -57,7 +55,6 @@ class RegisterForm(UserCreationForm):
             raise forms.ValidationError('Password must contain at least one digit.')
         return password
 
-
 class LoginForm(AuthenticationForm):
     username = forms.CharField(
         widget=forms.TextInput(
@@ -70,7 +67,6 @@ class LoginForm(AuthenticationForm):
         )
     )
     remember_me = forms.BooleanField(required=False)
-
 
 class ProfileUpdateForm(forms.ModelForm):
     first_name = forms.CharField(max_length=50, required=False)
@@ -139,7 +135,6 @@ class ProfileUpdateForm(forms.ModelForm):
         ):
             raise forms.ValidationError('Enter a valid x.com profile URL.')
         return x_url
-
 
 class ChangePasswordForm(forms.Form):
     old_password = forms.CharField(

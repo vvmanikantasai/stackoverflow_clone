@@ -14,13 +14,10 @@ class CloudinaryMediaStorage(Storage):
 
     def _save(self, name, content):
         path = PurePosixPath(name)
-        source_folder = path.parent.as_posix()
-        folder = 'stackit'
-        if source_folder and source_folder != '.':
-            folder = f'{folder}/{source_folder}'
-
+        folder = (PurePosixPath('stackit') / path.parent).as_posix()
         stem = slugify(path.stem) or 'image'
         public_id = f'{folder}/{stem}-{uuid4().hex[:12]}'
+
         content.seek(0)
         result = cloudinary.uploader.upload(
             content,
@@ -44,9 +41,8 @@ class CloudinaryMediaStorage(Storage):
         return False
 
     def url(self, name):
-        url, _ = cloudinary_url(
+        return cloudinary_url(
             name,
             resource_type='image',
             secure=True,
-        )
-        return url
+        )[0]

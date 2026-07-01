@@ -4,19 +4,15 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
-
 from accounts.models import Profile, ReputationHistory
 from answers.models import Answer
 from questions.models import Question
-
 from .models import Vote
-
 
 QUESTION_UPVOTE_POINTS = 5
 QUESTION_DOWNVOTE_POINTS = -2
 ANSWER_UPVOTE_POINTS = 10
 ANSWER_DOWNVOTE_POINTS = -2
-
 
 def get_vote_target(content_type, object_id):
     if content_type == 'question':

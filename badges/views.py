@@ -1,7 +1,5 @@
 from django.shortcuts import render
-
 from .models import Badge
-
 
 def get_badge_sort_order(badge):
     if badge.tier == 'bronze':

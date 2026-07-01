@@ -1,5 +1,4 @@
 from datetime import timedelta
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -7,19 +6,15 @@ from django.db.models import F, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-
 from accounts.models import Profile, ReputationHistory
 from badges.tasks import award_badges
 from questions.models import Question
-
 from .forms import AnswerForm
 from .models import Answer
-
 
 ACCEPTED_ANSWER_POINTS = 15
 ACCEPTING_ANSWER_POINTS = 2
 SELF_ACCEPT_WAIT = timedelta(hours=48)
-
 
 def revoke_reputation_award(*, user, answer, action, maximum_points, description):
     awarded_points = (

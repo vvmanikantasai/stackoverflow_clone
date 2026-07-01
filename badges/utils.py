@@ -1,6 +1,5 @@
 from .models import Badge, UserBadge
 
-
 def user_qualifies_for_badge(
     badge_name,
     question_count,

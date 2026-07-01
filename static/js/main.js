@@ -140,7 +140,6 @@ function initBookmark() {
 function initComments() {
   initCommentFormToggles();
   initCommentSubmissions();
-  initCommentDeleting();
   initCommentEditing();
   initCommentVoting();
 }
@@ -192,28 +191,6 @@ function initCommentSubmissions() {
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Add Comment';
-      }
-    });
-  });
-}
-
-function initCommentDeleting() {
-  document.querySelectorAll('.comment-delete-btn').forEach(btn => {
-    btn.addEventListener('click', async function () {
-      if (!confirm('Delete this comment?')) return;
-      const url = this.dataset.url;
-      try {
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'X-CSRFToken': getCsrfToken(), 'X-Requested-With': 'XMLHttpRequest' }
-        });
-        const data = await res.json();
-        if (data.success) {
-          this.closest('.comment-item').remove();
-          showToast('Comment deleted.', 'success');
-        }
-      } catch (e) {
-        showToast('Could not delete comment.', 'error');
       }
     });
   });

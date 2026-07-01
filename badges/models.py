@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-
 class Badge(models.Model):
     TIER_CHOICES = [('bronze', 'Bronze'), ('silver', 'Silver'), ('gold', 'Gold')]
     name = models.CharField(max_length=100, unique=True)
@@ -16,7 +15,6 @@ class Badge(models.Model):
 
     def __str__(self):
         return f'{self.tier.title()} - {self.name}'
-
 
 class UserBadge(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

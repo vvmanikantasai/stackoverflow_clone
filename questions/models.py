@@ -2,9 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils.text import slugify
-
 from tags.models import Tag
-
 
 class Question(models.Model):
     title = models.CharField(max_length=300)
@@ -50,7 +48,6 @@ class Question(models.Model):
     def accepted_answer(self):
         return self.answers.filter(is_accepted=True).first()
 
-
 class QuestionImage(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='question_images/')
@@ -58,7 +55,6 @@ class QuestionImage(models.Model):
 
     class Meta:
         db_table = 'question_images'
-
 
 class Bookmark(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookmarks')
@@ -71,7 +67,6 @@ class Bookmark(models.Model):
 
     def __str__(self):
         return f'{self.user.username} bookmarked {self.question.title}'
-
 
 class RecentlyViewed(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recently_viewed')

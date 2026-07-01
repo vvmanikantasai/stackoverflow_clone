@@ -1,7 +1,5 @@
 from django import forms
-
 from .models import Question
-
 
 class QuestionForm(forms.ModelForm):
     tags_input = forms.CharField(

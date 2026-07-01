@@ -2,9 +2,7 @@ from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
-
 from questions.models import Question
-
 from .models import Tag
 
 

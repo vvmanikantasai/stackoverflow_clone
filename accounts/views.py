@@ -5,12 +5,9 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
-
 from badges.models import UserBadge
-
 from .forms import RegisterForm, LoginForm, ProfileUpdateForm, ChangePasswordForm
 from .models import Follow, ReputationHistory
-
 
 def try_email_login(request):
     """Authenticate when a user enters an email instead of a username."""
@@ -220,6 +217,9 @@ def change_password_view(request):
 def users_list_view(request):
     sort_by = request.GET.get('sort', 'reputation')
     users = User.objects.filter(is_active=True).select_related('profile')
+    if request.user.is_authenticated:
+        users = users.exclude(pk=request.user.pk)
+
     if sort_by == 'reputation':
         users = users.order_by('-profile__reputation')
     elif sort_by == 'newest':
