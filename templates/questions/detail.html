@@ -72,7 +72,10 @@
             </button>
             {% if request.user == question.author or request.user.is_staff %}
               <a href="{% url 'edit_question' question.slug %}" class="action-link">Edit</a>
-              <form method="post" action="{% url 'delete_question' question.slug %}" class="inline-action-form">
+              <form method="post"
+                    action="{% url 'delete_question' question.slug %}"
+                    class="inline-action-form"
+                    data-confirm="Delete this question? This action cannot be undone.">
                 {% csrf_token %}
                 <button type="submit" class="action-link danger">Delete</button>
               </form>
@@ -199,9 +202,12 @@
             {% if request.user.is_authenticated %}
               {% if request.user == answer.author or request.user.is_staff %}
                 <a href="{% url 'edit_answer' answer.pk %}" class="action-link">Edit</a>
-                <form method="post" action="{% url 'delete_answer' answer.pk %}" class="inline-action-form">
+                <form method="post"
+                      action="{% url 'delete_answer' answer.pk %}"
+                      class="inline-action-form"
+                      data-confirm="Delete this answer? This action cannot be undone.">
                   {% csrf_token %}
-                  <button type="submit" class="action-link danger" data-confirm="Delete this answer?">Delete</button>
+                  <button type="submit" class="action-link danger">Delete</button>
                 </form>
               {% endif %}
               <a href="{% url 'report' 'answer' answer.pk %}" class="action-link">Report</a>

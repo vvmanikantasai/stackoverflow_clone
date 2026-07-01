@@ -518,7 +518,8 @@ function initMobileSearch() {
 // ===== CONFIRMATIONS =====
 function initConfirmations() {
   document.querySelectorAll('[data-confirm]').forEach(element => {
-    element.addEventListener('click', function (event) {
+    const eventName = element.tagName === 'FORM' ? 'submit' : 'click';
+    element.addEventListener(eventName, function (event) {
       const message = this.dataset.confirm || 'Are you sure?';
       if (!confirm(message)) {
         event.preventDefault();
