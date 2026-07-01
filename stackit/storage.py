@@ -1,6 +1,5 @@
 from pathlib import PurePosixPath
 from uuid import uuid4
-
 import cloudinary.uploader
 from cloudinary.utils import cloudinary_url
 from django.core.files.storage import Storage
@@ -36,8 +35,6 @@ class CloudinaryMediaStorage(Storage):
             )
 
     def exists(self, name):
-        # Every upload receives a UUID suffix, so checking Cloudinary first
-        # would add an unnecessary network request to every save.
         return False
 
     def url(self, name):
