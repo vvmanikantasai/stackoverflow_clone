@@ -89,7 +89,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'stackit.wsgi.application'
 
-# DATABASE
+#DATABASE
 if os.environ.get('DATABASE_URL'):
     DATABASES = {
         'default': dj_database_url.config(
@@ -173,7 +173,7 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
-SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_COOKIE_AGE = 1209600 
 SESSION_SAVE_EVERY_REQUEST = True
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
