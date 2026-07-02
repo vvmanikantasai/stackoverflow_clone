@@ -1,12 +1,11 @@
-/* ===== STACKIT MAIN JS ===== */
 
-// ===== CSRF TOKEN =====
+// CSRF TOKEN 
 function getCsrfToken() {
   const cookie = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='));
   return cookie ? cookie.split('=')[1] : '';
 }
 
-// ===== AVATAR DROPDOWN =====
+//  AVATAR DROPDOWN 
 document.addEventListener('DOMContentLoaded', () => {
   const avatarMenu = document.querySelector('.avatar-menu');
   if (avatarMenu) {
@@ -31,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initCharacterCounters();
 });
 
-// ===== VOTING =====
+//  Voting
 function initVoting() {
   document.querySelectorAll('.vote-btn').forEach(btn => {
     btn.addEventListener('click', async function () {
@@ -71,7 +70,7 @@ function initVoting() {
   });
 }
 
-// ===== SHARE LINKS =====
+//SHARE LINKS
 function initSharing() {
   document.querySelectorAll('.share-btn').forEach(btn => {
     btn.addEventListener('click', async function () {
@@ -106,7 +105,7 @@ function initSharing() {
   });
 }
 
-// ===== BOOKMARK =====
+// BOOKMARK 
 function initBookmark() {
   document.querySelectorAll('.bookmark-btn').forEach(btn => {
     btn.addEventListener('click', async function () {
@@ -136,7 +135,7 @@ function initBookmark() {
   });
 }
 
-// ===== COMMENTS =====
+// COMMENTS
 function initComments() {
   initCommentFormToggles();
   initCommentSubmissions();
@@ -266,7 +265,7 @@ function initCommentVoting() {
   });
 }
 
-// ===== MARKDOWN EDITOR =====
+// MARKDOWN EDITOR 
 function initEditor() {
   document.querySelectorAll('.editor-btn').forEach(btn => {
     btn.addEventListener('click', function () {
@@ -334,7 +333,7 @@ function formatList(selected, ordered) {
   return `\n${list}\n`;
 }
 
-// ===== MARKDOWN PREVIEW =====
+// MARKDOWN PREVIEW 
 function initMarkdownPreview() {
   document.querySelectorAll('.preview-tab-btn').forEach(btn => {
     btn.addEventListener('click', function () {
@@ -406,7 +405,7 @@ function escHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ===== TAG INPUT AUTOCOMPLETE =====
+// TAG INPUT AUTOCOMPLE
 function initTagInput() {
   const input = document.getElementById('id_tags_input');
   if (!input) return;
@@ -462,7 +461,7 @@ async function fetchTagSuggestions(query, suggestionsEl, input, words) {
   }
 }
 
-// ===== TOAST MESSAGES =====
+// TOAST MESSAGES
 function showToast(message, type = 'info') {
   let container = document.getElementById('toast-container');
   if (!container) {
@@ -484,7 +483,7 @@ function showToast(message, type = 'info') {
   }, 3000);
 }
 
-// ===== AUTO-DISMISS MESSAGES =====
+// AUTO-DISMISS MESSAGES
 function initMessages() {
   document.querySelectorAll('.message').forEach(msg => {
     setTimeout(() => {
@@ -495,7 +494,7 @@ function initMessages() {
   });
 }
 
-// ===== MOBILE SEARCH TOGGLE =====
+// MOBILE SEARCH TOGGLE 
 function initMobileSearch() {
   const searchToggle = document.getElementById('mobile-search-toggle');
   if (!searchToggle) return;
@@ -515,7 +514,7 @@ function initMobileSearch() {
   });
 }
 
-// ===== CONFIRMATIONS =====
+// CONFIRMATIONs
 function initConfirmations() {
   document.querySelectorAll('[data-confirm]').forEach(element => {
     const eventName = element.tagName === 'FORM' ? 'submit' : 'click';
@@ -528,7 +527,7 @@ function initConfirmations() {
   });
 }
 
-// ===== CHARACTER COUNTERS =====
+// CHARACTER COUNTERS
 function initCharacterCounters() {
   document.querySelectorAll('textarea[maxlength]').forEach(textarea => {
     const maximum = parseInt(textarea.getAttribute('maxlength'));
@@ -547,7 +546,7 @@ function initCharacterCounters() {
   });
 }
 
-// ===== SLIDE IN ANIMATION =====
+// SLIDE IN ANIMATION 
 const styleEl = document.createElement('style');
 styleEl.textContent = `@keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }`;
 document.head.appendChild(styleEl);

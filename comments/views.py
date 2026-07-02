@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import F
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.utils import timezone
 from answers.models import Answer
 from questions.models import Question
 from votes.models import Vote
@@ -63,6 +64,14 @@ def add_comment_view(request, content_type, object_id):
                 content_type=target_type,
                 object_id=object_id,
                 parent=parent,
+            )
+            question_id = (
+                target.pk
+                if isinstance(target, Question)
+                else target.question_id
+            )
+            Question.objects.filter(pk=question_id).update(
+                last_activity=timezone.now(),
             )
 
             if is_ajax(request):

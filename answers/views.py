@@ -73,7 +73,10 @@ def post_answer_view(request, question_pk):
             answer.question = question
             answer.author = request.user
             answer.save()
-            Question.objects.filter(pk=question.pk).update(answer_count=F('answer_count') + 1)
+            Question.objects.filter(pk=question.pk).update(
+                answer_count=F('answer_count') + 1,
+                last_activity=timezone.now(),
+            )
             transaction.on_commit(lambda: award_badges.delay(request.user.pk))
             messages.success(request, 'Answer posted!')
         else:
