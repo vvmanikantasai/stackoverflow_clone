@@ -13,6 +13,7 @@ urlpatterns = [
     path('badges/', include('badges.urls')),
     path('reports/', include('reports.urls')),
     path('votes/', include('votes.urls')),
+    path('notifications/', include('notifications.urls')),
 ]
 
 if not settings.USE_CLOUDINARY_MEDIA:

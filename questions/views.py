@@ -89,7 +89,77 @@ def build_comment_tree(model_cls, object_id, user):
 
     return root_comments
 
+def sidebar_context(include_top_contributors=False):
+    context = {
+        'hot_questions': Question.objects.filter(is_deleted=False).order_by(
+            '-view_count',
+            '-vote_count',
+        )[:5],
+        'trending_tags': Tag.objects.annotate(
+            usage=Count('questions'),
+        ).order_by('-usage')[:10],
+    }
+    if include_top_contributors:
+        context['top_contributors'] = (
+            User.objects.filter(is_active=True)
+            .select_related('profile')
+            .order_by('-profile__reputation')[:5]
+        )
+    return context
+
+
 def home_view(request):
+    questions = get_visible_questions()
+    recent_questions = []
+    interest_tags = []
+
+    if request.user.is_authenticated:
+        interest_tags = list(
+            Tag.objects.filter(
+                Q(questions__author=request.user)
+                | Q(questions__answers__author=request.user)
+                | Q(questions__viewed_by__user=request.user)
+                | Q(questions__bookmarks__user=request.user)
+            )
+            .distinct()
+            .order_by('name')[:12]
+        )
+        recent_questions = questions.filter(
+            viewed_by__user=request.user,
+        ).order_by('-viewed_by__viewed_at')[:5]
+
+        if interest_tags:
+            personalized_questions = (
+                questions.filter(tags__in=interest_tags)
+                .exclude(author=request.user)
+                .distinct()
+            )
+            if personalized_questions.exists():
+                questions = personalized_questions
+
+        feed_title = 'Interesting posts for you'
+        feed_description = (
+            'Based on questions you viewed, saved, asked, or answered.'
+            if interest_tags
+            else 'Start exploring questions and your feed will become more personal.'
+        )
+    else:
+        feed_title = 'Top questions'
+        feed_description = 'Popular questions from across the community.'
+
+    questions = questions.order_by('-last_activity', '-vote_count')[:12]
+    context = {
+        'feed_questions': questions,
+        'feed_title': feed_title,
+        'feed_description': feed_description,
+        'interest_tags': interest_tags,
+        'recent_questions': recent_questions,
+    }
+    context.update(sidebar_context(include_top_contributors=True))
+    return render(request, 'questions/dashboard.html', context)
+
+
+def questions_view(request):
     filter_by = request.GET.get('filter', 'newest')
     search = request.GET.get('q', '')
     questions = get_visible_questions()
@@ -115,26 +185,13 @@ def home_view(request):
     paginator = Paginator(questions, 15)
     page = paginator.get_page(request.GET.get('page', 1))
 
-    hot_questions = Question.objects.filter(is_deleted=False).order_by(
-        '-view_count',
-        '-vote_count',
-    )[:5]
-    trending_tags = Tag.objects.annotate(usage=Count('questions')).order_by('-usage')[:10]
-    top_contributors = (
-        User.objects.filter(is_active=True)
-        .select_related('profile')
-        .order_by('-profile__reputation')[:5]
-    )
-
     context = {
         'page': page,
         'filter_by': filter_by,
         'search': search,
-        'hot_questions': hot_questions,
-        'trending_tags': trending_tags,
-        'top_contributors': top_contributors,
         'total_questions': questions.count(),
     }
+    context.update(sidebar_context())
     return render(request, 'questions/home.html', context)
 
 
@@ -266,7 +323,7 @@ def delete_question_view(request, slug):
         question.is_deleted = True
         question.save()
         messages.success(request, 'Question deleted.')
-        return redirect('home')
+        return redirect('questions')
     return redirect('question_detail', slug=slug)
 
 

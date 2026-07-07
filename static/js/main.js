@@ -178,15 +178,24 @@ function initCommentSubmissions() {
           body: fd,
           headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
-        const data = await res.json();
-        if (data.success) {
+        const responseType = res.headers.get('content-type') || '';
+        const data = responseType.includes('application/json')
+          ? await res.json()
+          : {};
+        if (res.ok && data.success) {
           showToast('Comment added!', 'success');
           window.location.reload();
         } else {
-          showToast('Please fix form errors.', 'error');
+          const fieldErrors = data.errors
+            ? Object.values(data.errors).flat()
+            : [];
+          const errorMessage = data.error
+            || fieldErrors[0]
+            || `Could not post comment (server error ${res.status}).`;
+          showToast(errorMessage, 'error');
         }
       } catch (err) {
-        showToast('Failed to post comment.', 'error');
+        showToast('Could not reach the server. Please try again.', 'error');
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Add Comment';

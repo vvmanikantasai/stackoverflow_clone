@@ -8,6 +8,8 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 from accounts.models import Profile, ReputationHistory
 from badges.tasks import award_badges
+from notifications.models import Notification
+from notifications.services import create_notification
 from questions.models import Question
 from .forms import AnswerForm
 from .models import Answer
@@ -76,6 +78,16 @@ def post_answer_view(request, question_pk):
             Question.objects.filter(pk=question.pk).update(
                 answer_count=F('answer_count') + 1,
                 last_activity=timezone.now(),
+            )
+            create_notification(
+                recipient=question.author,
+                actor=request.user,
+                kind=Notification.Kind.ANSWER,
+                message=(
+                    f'{request.user.username} answered your question: '
+                    f'{question.title}'
+                ),
+                target_url=f'{question.get_absolute_url()}#answer-{answer.pk}',
             )
             transaction.on_commit(lambda: award_badges.delay(request.user.pk))
             messages.success(request, 'Answer posted!')
@@ -192,6 +204,16 @@ def accept_answer_view(request, pk):
                 description=f'Accepted an answer on: {question.title}',
                 question=question,
                 answer=answer,
+            )
+            create_notification(
+                recipient=answer.author,
+                actor=request.user,
+                kind=Notification.Kind.ACCEPTED,
+                message=(
+                    f'{request.user.username} accepted your answer on: '
+                    f'{question.title}'
+                ),
+                target_url=f'{question.get_absolute_url()}#answer-{answer.pk}',
             )
             transaction.on_commit(lambda: award_badges.delay(answer.author_id))
             transaction.on_commit(lambda: award_badges.delay(question.author_id))

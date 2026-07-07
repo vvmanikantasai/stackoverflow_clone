@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Notifications - Stack Overflow{% endblock %}
+
+{% block content %}
+<main class="main-content notification-page">
+  <div class="page-header notification-header">
+    <div>
+      <h1>Notifications</h1>
+      <p class="notification-subtitle">Answers, comments, replies, badges, and followers.</p>
+    </div>
+    {% if unread_notification_count %}
+      <form method="post" action="{% url 'mark_all_notifications_read' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary">Mark all as read</button>
+      </form>
+    {% endif %}
+  </div>
+
+  <div class="notification-list">
+    {% for notification in page %}
+      <a
+        href="{% url 'open_notification' notification.pk %}"
+        class="notification-item{% if not notification.is_read %} unread{% endif %}"
+      >
+        <span class="notification-icon material-symbols-outlined" aria-hidden="true">
+          {% if notification.kind == 'answer' %}forum
+          {% elif notification.kind == 'comment' %}chat_bubble
+          {% elif notification.kind == 'reply' %}reply
+          {% elif notification.kind == 'accepted' %}check_circle
+          {% elif notification.kind == 'follow' %}person_add
+          {% elif notification.kind == 'badge' %}workspace_premium
+          {% elif notification.kind == 'upvote' %}arrow_upward
+          {% else %}notifications{% endif %}
+        </span>
+        <span class="notification-copy">
+          <span class="notification-message">{{ notification.message }}</span>
+          <span class="notification-time">{{ notification.created_at|naturaltime }}</span>
+        </span>
+        {% if not notification.is_read %}
+          <span class="notification-unread-dot" aria-label="Unread"></span>
+        {% endif %}
+      </a>
+    {% empty %}
+      <div class="empty-state">
+        <span class="material-symbols-outlined">notifications_none</span>
+        <h3>No notifications yet</h3>
+        <p>When someone interacts with your posts or follows you, it will appear here.</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if page.paginator.num_pages > 1 %}
+    <nav class="pagination" aria-label="Notification pages">
+      {% if page.has_previous %}
+        <a href="?page={{ page.previous_page_number }}" class="page-link">Previous</a>
+      {% endif %}
+      <span class="page-info">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+      {% if page.has_next %}
+        <a href="?page={{ page.next_page_number }}" class="page-link">Next</a>
+      {% endif %}
+    </nav>
+  {% endif %}
+</main>
+{% endblock %}

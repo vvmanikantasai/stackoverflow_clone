@@ -1,4 +1,8 @@
+from django.urls import reverse
+
 from .models import Badge, UserBadge
+from notifications.models import Notification
+from notifications.services import create_notification
 
 def user_qualifies_for_badge(
     badge_name,
@@ -53,5 +57,12 @@ def check_and_award_badges(user):
         _, created = UserBadge.objects.get_or_create(user=user, badge=badge)
         if created:
             awarded.append(badge)
+            create_notification(
+                recipient=user,
+                actor=None,
+                kind=Notification.Kind.BADGE,
+                message=f'You earned the {badge.name} badge.',
+                target_url=reverse('badges'),
+            )
 
     return awarded

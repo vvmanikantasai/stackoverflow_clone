@@ -5,7 +5,10 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from badges.models import UserBadge
+from notifications.models import Notification
+from notifications.services import create_notification
 from .forms import RegisterForm, LoginForm, ProfileUpdateForm, ChangePasswordForm
 from .models import Follow, ReputationHistory
 
@@ -142,6 +145,16 @@ def toggle_follow_view(request, username):
             follow.delete()
             messages.info(request, f'You unfollowed {target.username}.')
         else:
+            create_notification(
+                recipient=target,
+                actor=request.user,
+                kind=Notification.Kind.FOLLOW,
+                message=f'{request.user.username} started following you.',
+                target_url=reverse(
+                    'profile',
+                    kwargs={'username': request.user.username},
+                ),
+            )
             messages.success(request, f'You are now following {target.username}.')
     return redirect('profile', username=username)
 

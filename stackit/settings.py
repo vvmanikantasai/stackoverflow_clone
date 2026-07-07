@@ -22,7 +22,7 @@ load_dotenv(BASE_DIR / '.env')
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 USE_CLOUDINARY_MEDIA = bool(os.environ.get('CLOUDINARY_URL'))
 
-SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
+SECRET_KEY = os .environ['DJANGO_SECRET_KEY']
 
 ALLOWED_HOSTS = [
     host.strip()
@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'tags',
     'badges',
     'reports',
+    'notifications',
 ]
 if USE_CLOUDINARY_MEDIA:
     INSTALLED_APPS.append('cloudinary')
@@ -92,6 +93,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'notifications.context_processors.unread_notifications',
             ],
         },
     },
@@ -159,8 +161,6 @@ LOGOUT_REDIRECT_URL = '/'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'noreply@stackit.dev'
 
-# Elasticsearch is optional locally. When it is not configured or cannot be
-# reached, the search view falls back to the database.
 ELASTICSEARCH_URL = os.environ.get('ELASTICSEARCH_URL', '').strip()
 ELASTICSEARCH_API_KEY = os.environ.get('ELASTICSEARCH_API_KEY', '').strip()
 ELASTICSEARCH_USERNAME = os.environ.get('ELASTICSEARCH_USERNAME', '').strip()
@@ -172,8 +172,7 @@ ELASTICSEARCH_INDEX = os.environ.get(
 if 'test' in sys.argv:
     ELASTICSEARCH_URL = ''
 
-# Celery runs tasks eagerly in development when no broker is configured. Set
-# CELERY_BROKER_URL (normally to Redis) for a real background worker.
+
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'memory://')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'cache+memory://')
 CELERY_TASK_ALWAYS_EAGER = not bool(os.environ.get('CELERY_BROKER_URL'))

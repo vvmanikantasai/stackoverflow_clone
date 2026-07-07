@@ -110,3 +110,4 @@ stackit/
 ## Author
 
 Developed as a learning project using Django.
+

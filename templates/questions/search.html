@@ -36,7 +36,7 @@
   {% if page.object_list %}
     <div class="search-results-toolbar">
       <span>Showing {{ page.start_index }}–{{ page.end_index }} of {{ page.paginator.count|intcomma }}</span>
-      <a href="{% url 'home' %}">Browse all questions</a>
+      <a href="{% url 'questions' %}">Browse all questions</a>
     </div>
 
     <div class="question-list search-results-list">

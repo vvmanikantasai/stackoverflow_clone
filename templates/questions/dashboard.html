@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load static humanize markdown_extras %}
+{% block title %}Home - Stack Overflow{% endblock %}
+
+{% block content %}
+<main class="main-content home-dashboard">
+  <header class="home-page-header">
+    <div class="home-header-copy">
+      <h1>Home</h1>
+      <p>
+        {% if request.user.is_authenticated %}
+          Welcome back, <strong>{{ request.user.username }}</strong>. Here is what is happening in your developer community.
+        {% else %}
+          Discover useful questions, trusted answers, and people sharing what they know.
+        {% endif %}
+      </p>
+    </div>
+    <a href="{% url 'ask_question' %}" class="btn btn-primary">Ask Question</a>
+  </header>
+
+  {% if request.user.is_authenticated %}
+  <section class="home-stats" aria-label="Your activity">
+    <a href="{% url 'profile' request.user.username %}?tab=questions" class="home-stat">
+      <span class="home-stat-icon material-symbols-outlined">help</span>
+      <span><strong>{{ request.user.profile.questions_count|intcomma }}</strong><small>Your questions</small></span>
+    </a>
+    <a href="{% url 'profile' request.user.username %}?tab=answers" class="home-stat">
+      <span class="home-stat-icon material-symbols-outlined">forum</span>
+      <span><strong>{{ request.user.profile.answers_count|intcomma }}</strong><small>Your answers</small></span>
+    </a>
+    <a href="{% url 'saved_questions' %}" class="home-stat">
+      <span class="home-stat-icon material-symbols-outlined">bookmark</span>
+      <span><strong>{{ request.user.bookmarks.count|intcomma }}</strong><small>Saved posts</small></span>
+    </a>
+    <a href="{% url 'profile' request.user.username %}" class="home-stat">
+      <span class="home-stat-icon material-symbols-outlined">workspace_premium</span>
+      <span><strong>{{ request.user.profile.reputation|intcomma }}</strong><small>Reputation</small></span>
+    </a>
+  </section>
+  {% endif %}
+
+  <section class="home-feed">
+    <div class="home-section-header">
+      <div>
+        <h2>{{ feed_title }}</h2>
+        <p>{{ feed_description }}</p>
+      </div>
+      <a href="{% url 'questions' %}" class="btn btn-ghost btn-sm">View all questions</a>
+    </div>
+
+    {% if interest_tags %}
+    <div class="home-interest-tags" aria-label="Topics used for your feed">
+      {% for tag in interest_tags %}
+        <a href="{% url 'tag_detail' tag.slug %}" class="tag">{{ tag.name }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if feed_questions %}
+    <div class="question-list">
+      {% for question in feed_questions %}
+      <article class="question-card">
+        <div class="question-stats">
+          <div class="stat-item">
+            <span class="stat-number">{{ question.vote_count }}</span>
+            <span>vote{{ question.vote_count|pluralize }}</span>
+          </div>
+          <div class="stat-item {% if question.has_accepted_answer %}has-accepted{% elif question.answer_count > 0 %}has-answers{% endif %}">
+            <span class="stat-number">{{ question.answer_count }}</span>
+            <span>answer{{ question.answer_count|pluralize }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ question.view_count }}</span>
+            <span>view{{ question.view_count|pluralize }}</span>
+          </div>
+        </div>
+        <div class="question-body">
+          <h3 class="question-title">
+            <a href="{{ question.get_absolute_url }}">{{ question.title }}</a>
+          </h3>
+          <div class="question-excerpt">{{ question.content|render_markdown|striptags|truncatechars:150 }}</div>
+          <div class="question-meta">
+            <div class="tags-list">
+              {% for tag in question.tags.all %}
+                <a href="{% url 'tag_detail' tag.slug %}" class="tag">{{ tag.name }}</a>
+              {% endfor %}
+            </div>
+            <div class="author-info">
+              <img class="author-avatar" src="{{ question.author.profile.get_avatar_url }}" alt="">
+              <a href="{% url 'profile' question.author.username %}" class="author-name">{{ question.author.username }}</a>
+              <span class="rep-badge">{{ question.author.profile.reputation|intcomma }}</span>
+              <span>active {{ question.last_activity|naturaltime }}</span>
+            </div>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <span class="empty-icon material-symbols-outlined">travel_explore</span>
+      <h3>No recommendations yet</h3>
+      <p>Browse some questions so we can learn what interests you.</p>
+      <a href="{% url 'questions' %}" class="btn btn-primary">Browse Questions</a>
+    </div>
+    {% endif %}
+  </section>
+</main>
+
+<aside class="right-sidebar">
+  {% if request.user.is_authenticated and recent_questions %}
+  <div class="sidebar-widget">
+    <div class="widget-header">Recently viewed</div>
+    <div class="widget-body">
+      {% for question in recent_questions %}
+      <div class="widget-item blog-item">
+        <span class="mini-icon material-symbols-outlined">history</span>
+        <a href="{{ question.get_absolute_url }}">{{ question.title|truncatechars:60 }}</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% elif not request.user.is_authenticated %}
+  <div class="sidebar-widget">
+    <div class="widget-header">Make it yours</div>
+    <div class="widget-body home-join-widget">
+      <p>Log in to get a feed based on the topics you explore.</p>
+      <a href="{% url 'register' %}" class="btn btn-primary">Sign Up</a>
+      <a href="{% url 'login' %}" class="btn btn-ghost">Log In</a>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="sidebar-widget home-contributors-widget">
+    <div class="widget-header">Top Contributors</div>
+    <div class="widget-body">
+      {% for user in top_contributors %}
+      <a class="home-contributor" href="{% url 'profile' user.username %}">
+        <span class="contributor-rank">{{ forloop.counter }}</span>
+        <img src="{{ user.profile.get_avatar_url }}" alt="">
+        <span class="contributor-name">{{ user.username }}</span>
+        <span class="count">{{ user.profile.reputation|intcomma }} rep</span>
+      </a>
+      {% empty %}
+      <p class="text-muted text-sm home-widget-empty">No contributors yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="sidebar-widget">
+    <div class="widget-header">Trending Tags</div>
+    <div class="widget-body">
+      <div class="home-sidebar-tags">
+        {% for tag in trending_tags %}
+          <a href="{% url 'tag_detail' tag.slug %}" class="tag">{{ tag.name }} × {{ tag.usage }}</a>
+        {% empty %}
+          <p class="text-muted text-sm">No tags yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</aside>
+{% endblock %}

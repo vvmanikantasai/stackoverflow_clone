@@ -6,6 +6,8 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from answers.models import Answer
+from notifications.models import Notification
+from notifications.services import create_notification
 from questions.models import Question
 from votes.models import Vote
 from .forms import CommentForm
@@ -73,6 +75,31 @@ def add_comment_view(request, content_type, object_id):
             Question.objects.filter(pk=question_id).update(
                 last_activity=timezone.now(),
             )
+            target_url = f'{get_question_url(target)}#comment-{comment.pk}'
+            if parent:
+                create_notification(
+                    recipient=parent.author,
+                    actor=request.user,
+                    kind=Notification.Kind.REPLY,
+                    message=(
+                        f'{request.user.username} replied to your comment.'
+                    ),
+                    target_url=target_url,
+                )
+
+            target_author = target.author
+            if not parent or target_author.pk != parent.author_id:
+                target_name = 'question' if isinstance(target, Question) else 'answer'
+                create_notification(
+                    recipient=target_author,
+                    actor=request.user,
+                    kind=Notification.Kind.COMMENT,
+                    message=(
+                        f'{request.user.username} commented on your '
+                        f'{target_name}.'
+                    ),
+                    target_url=target_url,
+                )
 
             if is_ajax(request):
                 return JsonResponse({
